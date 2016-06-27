@@ -200,7 +200,10 @@ Histogram.prototype.isSetupDone = function () {
 };
 
 Histogram.prototype.getQuery = function (noOfDaysOld) {
-    if (noOfDaysOld === undefined) noOfDaysOld = 0;
+    var days = 0;
+    if (noOfDaysOld) {
+        days = noOfDaysOld;
+    }
 
     if (this.period != 0) {
         var timestamp = new Date().getTime();
@@ -211,7 +214,7 @@ Histogram.prototype.getQuery = function (noOfDaysOld) {
             this.doCompare = false;
         }
 
-        filters.push(timeValue(this.period, psDropDown, noOfDaysOld));
+        filters.push(timeValue(this.period, psDropDown, days));
         if (this.selectedFilters && this.selectedFilters.filters) {
             for (var i = 0; i < this.selectedFilters.filters.length; i++) {
                 filters.push(this.selectedFilters.filters[i]);

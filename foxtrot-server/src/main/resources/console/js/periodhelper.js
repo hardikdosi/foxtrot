@@ -12,10 +12,12 @@ function periodFromWindow(periodString) {
 }
 
 function timeValue(period, selectedPeriodString, noOfDaysOld) {
-    if (noOfDaysOld === undefined) noOfDaysOld = 0;
+    var days = 0;
+    if (noOfDaysOld) {
+        days = noOfDaysOld;
+    }
 
-    var timestamp = new Date(new Date() - noOfDaysOld * 24 * 3600 * 1000).getTime();
-    console.log("TimeStamp = " + timestamp);
+    var timestamp = new Date(new Date() - days * 24 * 3600 * 1000).getTime();
 
     if(selectedPeriodString === "custom") {
         return {

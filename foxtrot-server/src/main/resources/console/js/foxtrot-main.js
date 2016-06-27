@@ -270,7 +270,6 @@ $(document).ready(function(){
 	$("#addWidgetConfirm").click($.proxy(foxtrot.addTile, foxtrot));
 	$("#loadConsoleModal").on('shown.bs.modal', $.proxy(foxtrot.loadConsoleList, foxtrot));
 	foxtrot.init();
-
 	//Check if a console is specified.
 	//If yes, render the UI accordingly...
 

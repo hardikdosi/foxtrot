@@ -15,31 +15,26 @@
  */
 
 function Queue() {
-    console.log("tile: queue-constructor");
     this.requests = {};
     this.refreshTime = 5;
     this.timeout = 4000;
 }
 
 Queue.prototype.enqueue = function (key, ajaxRequest) {
-    console.log("tile: queue-enqueue");
     console.log("Adding: " + key);
     this.requests[key] = ajaxRequest;
 };
 
 Queue.prototype.remove = function (key) {
-    console.log("tile: queue-remove");
     console.log("Removing: " + key);
     delete this.requests[key];
 };
 
 Queue.prototype.start = function () {
-    console.log("tile: queue-start");
     setInterval($.proxy(this.executeCalls, this), this.refreshTime * 1000);
 };
 
 Queue.prototype.executeCalls = function () {
-    console.log("tile: queue-executeCalls");
     for (var property in this.requests) {
         if (this.requests.hasOwnProperty(property)) {
             this.requests[property]();
@@ -49,7 +44,6 @@ Queue.prototype.executeCalls = function () {
 
 
 function Tile() {
-    console.log("tile: constructor");
     this.id = null;
     this.type = null;
     this.tables = null;
@@ -68,7 +62,6 @@ function Tile() {
 }
 
 Tile.prototype.init = function (id, queue, tables) {
-    console.log("tile: init");
     this.id = id;
     this.queue = queue;
     this.tables = tables;
@@ -78,39 +71,12 @@ Tile.prototype.init = function (id, queue, tables) {
 }
 
 Tile.prototype.cleanup = function () {
-    console.log("tile: cleanup");
     if (this.queue) {
         this.queue.remove(this.id);
     }
 };
 
-//Tile.prototype.reloadData = function () {
-//    console.log("tile: reloadData");
-//    this.query = this.getQuery();
-//    this.previousQuery = this.getPreviousQuery();
-//
-//    if (!this.query) {
-//        console.log("did not update since query setup is not complete " + this.id);
-//        return;
-//    }
-//
-//    $.ajax({
-//        method: this.httpMethod,
-//        dataType: 'json',
-//        accepts: {
-//            json: 'application/json'
-//        },
-//        url: this.url,
-//        contentType: this.contentType,
-//        timeout: this.queue.timeout,
-//        data: this.query,
-//        //success: $.proxy(this.newDataReceived, this)
-//        success: $.proxy(this.newDataReceived, this)
-//    });
-//};
-
 Tile.prototype.reloadData = function () {
-    console.log("tile: reloadData");
 
     this.query = this.getQuery(0);
     this.previousQuery = this.getQuery(1);
@@ -174,12 +140,10 @@ Tile.prototype.newDataReceived = function (data, dataPrevious) {
 };
 
 Tile.prototype.handleResize = function (event, ui) {
-    console.log("tile: handleResize");
     this.render(this.cachedData, false);
 };
 
 Tile.prototype.getRepresentation = function () {
-    console.log("tile: getRepresentation");
     var chartAreaId = "#content-for-" + this.id;
     var chartContent = $("#" + this.id).find(chartAreaId);
     this.height = chartContent.parent().height();
@@ -196,7 +160,6 @@ Tile.prototype.getRepresentation = function () {
 };
 
 Tile.prototype.loadTileFromRepresentation = function (representation) {
-    console.log("tile: loadTileFromRepresentation");
     this.id = representation.id;
     this.width = representation.width;
     this.height = representation.height;
@@ -205,65 +168,52 @@ Tile.prototype.loadTileFromRepresentation = function (representation) {
 }
 
 Tile.prototype.isSetupDone = function () {
-    console.log("tile: isSetupDone");
     return false;
 };
 
 Tile.prototype.render = function (data, animate) {
-    console.log("tile: render");
 };
 
 Tile.prototype.configChanged = function () {
-    console.log("tile: configChanged");
     console.log("Widget config changed");
 };
 
 Tile.prototype.getQuery = function () {
-    console.log("tile: getQuery");
     return this.query;
 }
 
 Tile.prototype.populateSetupDialog = function () {
-    console.log("tile: populateSetupDialog");
 };
 
 Tile.prototype.registerSpecificData = function (representation) {
-    console.log("tile: registerSpecificData");
     console.log("Base representation called for " + this.typeName + ": " + this.id);
 };
 
 Tile.prototype.loadSpecificData = function (representation) {
-    console.log("tile: loadSpecificData");
     console.log("Base load called for " + this.typeName + ": " + this.id)
 };
 
 Tile.prototype.registerComplete = function () {
-    console.log("tile: registerComplete");
 }
 
 Tile.prototype.getUniqueValues = function () {
-    console.log("tile: getUniqueValues");
 }
 
 Tile.prototype.filterValues = function (values) {
-    console.log("tile: filterValues");
 }
 
 Tile.prototype.getCompareStatus = function() {
-    console.log("tile: getCompareStatus");
 };
 
 
 
 function TileSet(id, tables) {
-    console.log("tileSet: constructor");
     this.id = id;
     this.tables = tables;
     this.currentTiles = {};
 }
 
 TileSet.prototype.closeHandler = function (eventData) {
-    console.log("tileSet: closeHandler");
     var tileId = eventData.currentTarget.parentNode.parentNode.parentNode.getAttribute('id');
     this.unregister(tileId);
     var tileContainer = $(this.id);
@@ -273,7 +223,6 @@ TileSet.prototype.closeHandler = function (eventData) {
 };
 
 TileSet.prototype.register = function (tile) {
-    console.log("tileSet: register");
     var tileContainer = $(this.id);
     this.currentTiles[tile.id] = tile;
     var newDiv = $(handlebars("#tile-template", {tileId: tile.id, title: tile.title}));
@@ -290,6 +239,18 @@ TileSet.prototype.register = function (tile) {
             var modal = null;
             modal = $(tile.setupModalName);
             modal.find(".tileId").val(tile.id);
+
+            var z = modal.find('#histogram_rt');
+            z.keyup(function() {
+                var compare = modal.find('#hist-do-compare');
+                if (z.val() >= 5 && z.val() <= 1440) {
+                    compare.prop('disabled', false);
+                } else {
+                    compare.prop('checked', false);
+                    compare.prop('disabled', true);
+                }
+            });
+
             var form = modal.find("form");
             form.off('submit');
             form.on('submit', $.proxy(function (e) {
@@ -332,7 +293,6 @@ TileSet.prototype.register = function (tile) {
 };
 
 TileSet.prototype.unregister = function (tileId) {
-    console.log("tileSet: unregister");
     var tile = this.currentTiles[tileId];
     if (!tile) {
         return;
@@ -342,11 +302,7 @@ TileSet.prototype.unregister = function (tileId) {
     delete this.currentTiles[tileId];
 };
 
-
-
-
 function GenericTile() {
-    console.log("GenericTile: constructor");
     this.query = JSON.stringify({
         opcode: "group",
         table: "abcd",
@@ -361,11 +317,9 @@ GenericTile.prototype = new Tile();
 
 
 function TileFactory() {
-    console.log("tileFactory: constructor");
 }
 
 TileFactory.create = function (type) {
-    console.log("tileFactory: create");
     if (type === "donut") {
         return new DonutTile();
     } else if (type === "bar") {

@@ -15,7 +15,6 @@
  */
 
 function BarTile() {
-    console.log("bar-tile: constructor");
     this.typeName = "bar";
     this.setupModalName = "#setupBarChartModal";
 //Instance properties
@@ -31,8 +30,6 @@ function BarTile() {
 BarTile.prototype = new Tile();
 
 BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
-    console.log("bar-tile: renderWithCompare");
-
     var tileElement = $("#" + this.id);
     var parent = $("#content-for-" + this.id);
     var parentWidth = parent.width();
@@ -388,13 +385,15 @@ BarTile.prototype.render = function (data, animate) {
 };
 
 BarTile.prototype.getQuery = function (noOfDaysOld) {
-    if (noOfDaysOld === undefined) noOfDaysOld = 0;
+    var days = 0;
+    if (noOfDaysOld) {
+        days = noOfDaysOld;
+    }
 
-    console.log("bar-tile: getQuery");
     if (this.eventTypeFieldName && this.period != 0) {
         var filters = [];
 
-        filters.push(timeValue(this.period, $("#" + this.id).find(".period-select").val(), noOfDaysOld));
+        filters.push(timeValue(this.period, $("#" + this.id).find(".period-select").val(), days));
 
         if (this.selectedValues) {
             filters.push({
@@ -418,12 +417,10 @@ BarTile.prototype.getQuery = function (noOfDaysOld) {
 };
 
 BarTile.prototype.isSetupDone = function () {
-    console.log("bar-tile: isSetupDone");
     return this.eventTypeFieldName && this.period != 0;
 };
 
 BarTile.prototype.configChanged = function () {
-    console.log("bar-tile: configChanged");
     var modal = $(this.setupModalName);
     this.period = parseInt(modal.find(".refresh-period").val());
     this.eventTypeFieldName = modal.find(".bar-chart-field").val();
@@ -451,7 +448,6 @@ BarTile.prototype.configChanged = function () {
 };
 
 BarTile.prototype.populateSetupDialog = function () {
-    console.log("bar-tile: populatesetupDialog");
     var modal = $(this.setupModalName);
     modal.find(".tile-title").val(this.title)
     var select = modal.find("#bar-chart-field");
@@ -476,7 +472,6 @@ BarTile.prototype.populateSetupDialog = function () {
 };
 
 BarTile.prototype.registerSpecificData = function (representation) {
-    console.log("bar-tile: registerSpecificData");
     representation['period'] = this.period;
     representation['eventTypeFieldName'] = this.eventTypeFieldName;
     representation['selectedValues'] = this.selectedValues;
@@ -487,7 +482,6 @@ BarTile.prototype.registerSpecificData = function (representation) {
 };
 
 BarTile.prototype.loadSpecificData = function (representation) {
-    console.log("bar-tile: loadSpecificData");
     this.period = representation['period'];
     this.eventTypeFieldName = representation['eventTypeFieldName'];
     this.selectedValues = representation['selectedValues'];
@@ -500,12 +494,10 @@ BarTile.prototype.loadSpecificData = function (representation) {
 };
 
 BarTile.prototype.isValueVisible = function (value) {
-    console.log("bar-tile: isValueVisible");
     return !this.uiFilteredValues || this.uiFilteredValues.hasOwnProperty(value);
 };
 
 BarTile.prototype.getUniqueValues = function () {
-    console.log("bar-tile: getUniqueValues");
     var options = [];
     for (var i = 0; i < this.uniqueValues.length; i++) {
         var value = this.uniqueValues[i];
@@ -522,7 +514,6 @@ BarTile.prototype.getUniqueValues = function () {
 }
 
 BarTile.prototype.filterValues = function (values) {
-    console.log("bar-tile: filterValues");
     if (!values || values.length == 0) {
         values = this.uniqueValues;
     }

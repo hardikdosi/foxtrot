@@ -6,12 +6,12 @@ http:
 elasticsearch:
   hosts:
   - localhost
-  cluster: elasticsearch
+  cluster: foxtrot
   tableNamePrefix: foxtrot
 
 hbase:
   secure : false
-  tableName: table_one
+  tableName: foxtrot
   hbaseZookeeperQuorum: localhost
   hbaseZookeeperClientPort: 2181
 

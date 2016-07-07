@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.flipkart.foxtrot.common.query.Query;
 import com.flipkart.foxtrot.common.query.general.MissingFilter;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.sql.query.FqlActionQuery;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
@@ -82,6 +83,7 @@ public class ParseTest {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
         {
+            RestrictionsConfig restrictionsConfig = new RestrictionsConfig();
             String sql = "select * from europa where a is null";
             QueryTranslator queryTranslator = new QueryTranslator();
             //FqlQuery query = queryTranslator.translate(sql);
@@ -93,7 +95,7 @@ public class ParseTest {
             ImmutableList filters = ImmutableList.of(new MissingFilter("a"));
             query.setFilters(filters);
             FqlActionQuery fqlActionQuery = new FqlActionQuery(FqlQueryType.select,query, new ArrayList<String>());
-            Assert.assertEquals(writer.writeValueAsString(fqlActionQuery), writer.writeValueAsString(queryTranslator.translate(sql)));
+            Assert.assertEquals(writer.writeValueAsString(fqlActionQuery), writer.writeValueAsString(queryTranslator.translate(sql, restrictionsConfig)));
 
         }
     }

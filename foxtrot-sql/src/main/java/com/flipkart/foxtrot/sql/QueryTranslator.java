@@ -15,6 +15,7 @@ import com.flipkart.foxtrot.common.query.numeric.*;
 import com.flipkart.foxtrot.common.stats.StatsRequest;
 import com.flipkart.foxtrot.common.stats.StatsTrendRequest;
 import com.flipkart.foxtrot.common.trend.TrendRequest;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.sql.extendedsql.ExtendedSqlStatement;
 import com.flipkart.foxtrot.sql.extendedsql.desc.Describe;
 import com.flipkart.foxtrot.sql.extendedsql.showtables.ShowTables;
@@ -53,6 +54,7 @@ public class QueryTranslator extends SqlElementVisitor {
     private List<Filter> filters;
     private List<String> selectedColumns = Lists.newArrayList();
     private List<ResultSort> columnsWithSort = Lists.newArrayList();
+    private RestrictionsConfig restrictionsConfig;
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -94,7 +96,7 @@ public class QueryTranslator extends SqlElementVisitor {
         }
 
         if(null != plainSelect.getWhere()) {
-            FilterParser filterParser = new FilterParser();
+            FilterParser filterParser = new FilterParser(restrictionsConfig);
             plainSelect.getWhere().accept(filterParser);
             filters = (filterParser.filters.isEmpty()) ? null : filterParser.filters;
         }
@@ -152,7 +154,8 @@ public class QueryTranslator extends SqlElementVisitor {
         selectExpressionItem.getExpression().accept(this);
     }
 
-    public FqlQuery translate(String sql) throws Exception {
+    public FqlQuery translate(String sql, RestrictionsConfig restrictionsConfig) throws Exception {
+        this.restrictionsConfig = restrictionsConfig;
         ExtendedSqlStatement extendedSqlStatement = metastatementMatcher.parse(sql);
         if(null != extendedSqlStatement) {
             ExtendedSqlParser parser = new ExtendedSqlParser();
@@ -427,7 +430,11 @@ public class QueryTranslator extends SqlElementVisitor {
     private static final class FilterParser extends SqlElementVisitor {
 
         private List<Filter> filters = Lists.newArrayList();
+        private RestrictionsConfig restrictionsConfig;
 
+        FilterParser(RestrictionsConfig restrictionsConfig) {
+            this.restrictionsConfig = restrictionsConfig;
+        }
         @Override
         public void visit(EqualsTo equalsTo) {
             EqualsFilter equalsFilter = new EqualsFilter();
@@ -460,6 +467,15 @@ public class QueryTranslator extends SqlElementVisitor {
             betweenFilter.setTemporal(columnData.isTemporal());
             Number from = getNumbericValue(between.getBetweenExpressionStart());
             Number to = getNumbericValue(between.getBetweenExpressionEnd());
+
+            if (!restrictionsConfig.getBetweenduration().isEmpty()) {
+                if (between.getLeftExpression().toString().contains("_timestamp")) {
+                    if (to.longValue() - from.longValue() > Duration.parse(restrictionsConfig.getBetweenduration()).toMilliseconds()) {
+                        throw new RuntimeException("Limit exceeded for range in BETWEEN !");
+                    }
+                }
+            }
+
             betweenFilter.setFrom(from);
             betweenFilter.setTo(to);
             filters.add(betweenFilter);

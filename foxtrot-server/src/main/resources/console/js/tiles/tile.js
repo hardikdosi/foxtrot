@@ -111,7 +111,11 @@ Tile.prototype.reloadData = function () {
                 timeout: this.queue.timeout,
                 data: this.previousQuery
 
-            })).done($.proxy(this.newDataReceived, this));
+            })).then($.proxy(this.newDataReceived, this),
+            function() {
+                error("Incorrect Tile Setup. Please make sure that the parameter values are within limits.")
+            });
+
     } else {
         $.ajax({
             method: this.httpMethod,
@@ -124,7 +128,10 @@ Tile.prototype.reloadData = function () {
             timeout: this.queue.timeout,
             data: this.query,
             //success: $.proxy(this.newDataReceived, this)
-            success: $.proxy(this.newDataReceived, this)
+            success: $.proxy(this.newDataReceived, this),
+            error: function() {
+                error("Incorrect Tile Setup. Please make sure that the parameter values are within limits.");
+            }
         });
     }
 };

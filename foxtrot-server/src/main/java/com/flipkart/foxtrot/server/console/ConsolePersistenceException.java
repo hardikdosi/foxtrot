@@ -19,7 +19,6 @@ import com.flipkart.foxtrot.core.exception.ErrorCode;
 import com.flipkart.foxtrot.core.exception.FoxtrotException;
 import com.google.common.collect.Maps;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class ConsolePersistenceException extends FoxtrotException {

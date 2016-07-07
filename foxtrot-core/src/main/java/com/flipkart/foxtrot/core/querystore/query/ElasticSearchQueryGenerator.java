@@ -23,6 +23,8 @@ import com.flipkart.foxtrot.common.query.datetime.TimeWindow;
 import com.flipkart.foxtrot.common.query.general.*;
 import com.flipkart.foxtrot.common.query.numeric.*;
 import com.flipkart.foxtrot.common.query.string.ContainsFilter;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
+import com.yammer.dropwizard.util.Duration;
 import org.elasticsearch.index.query.*;
 
 import java.util.List;
@@ -35,10 +37,12 @@ import java.util.List;
 public class ElasticSearchQueryGenerator extends FilterVisitor {
     private final BoolFilterBuilder boolFilterBuilder;
     private final FilterCombinerType combinerType;
+    private final RestrictionsConfig restrictionsConfig;
 
-    public ElasticSearchQueryGenerator(FilterCombinerType combinerType) {
+    public ElasticSearchQueryGenerator(FilterCombinerType combinerType, RestrictionsConfig restrictionsConfig) {
         this.boolFilterBuilder = FilterBuilders.boolFilter();
         this.combinerType = combinerType;
+        this.restrictionsConfig = restrictionsConfig;
     }
 
     @Override
@@ -123,6 +127,13 @@ public class ElasticSearchQueryGenerator extends FilterVisitor {
     @Override
     public void visit(LastFilter lastFilter) throws Exception {
         TimeWindow timeWindow = lastFilter.getWindow();
+
+        if (!restrictionsConfig.getLastduration().isEmpty()) {
+            if ((timeWindow.getEndTime() - timeWindow.getStartTime()) > Duration.parse(restrictionsConfig.getLastduration()).toMilliseconds()) {
+                throw new RuntimeException("RANGE LIMIT EXCEEDED !");
+            }
+        }
+
         addFilter(
                 FilterBuilders.rangeFilter(lastFilter.getField())
                         .from(timeWindow.getStartTime())

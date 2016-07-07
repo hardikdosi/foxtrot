@@ -9,12 +9,10 @@ import com.flipkart.foxtrot.core.datastore.DataStore;
 import com.flipkart.foxtrot.core.querystore.QueryExecutor;
 import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsLoader;
-import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
-import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchQueryStore;
-import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchUtils;
-import com.flipkart.foxtrot.core.querystore.impl.HazelcastConnection;
+import com.flipkart.foxtrot.core.querystore.impl.*;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.impl.record.RecordStatistics;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +36,7 @@ public class ActionTest {
     private HazelcastInstance hazelcastInstance;
     private MockElasticsearchServer elasticsearchServer;
     private ElasticsearchConnection elasticsearchConnection;
+    private RestrictionsConfig restrictionsConfig;
 
     @Before
     public void setUp() throws Exception {
@@ -64,7 +63,8 @@ public class ActionTest {
                 queryStore,
                 elasticsearchConnection,
                 cacheManager,
-                mapper);
+                mapper,
+                restrictionsConfig);
         analyticsLoader.start();
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         this.queryExecutor = new QueryExecutor(analyticsLoader, executorService);

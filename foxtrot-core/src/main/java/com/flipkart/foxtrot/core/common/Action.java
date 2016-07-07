@@ -29,6 +29,7 @@ import com.flipkart.foxtrot.core.exception.FoxtrotExceptions;
 import com.flipkart.foxtrot.core.exception.MalformedQueryException;
 import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.flipkart.foxtrot.core.util.MetricUtil;
 import com.google.common.base.Stopwatch;
@@ -57,6 +58,7 @@ public abstract class Action<ParameterType extends ActionRequest> implements Cal
     private final QueryStore queryStore;
     private final String cacheToken;
     private final CacheManager cacheManager;
+    private final RestrictionsConfig restrictionsConfig;
 
     protected Action(ParameterType parameter,
                      TableMetadataManager tableMetadataManager,
@@ -64,7 +66,8 @@ public abstract class Action<ParameterType extends ActionRequest> implements Cal
                      QueryStore queryStore,
                      ElasticsearchConnection connection,
                      String cacheToken,
-                     CacheManager cacheManager) {
+                     CacheManager cacheManager,
+                     RestrictionsConfig restrictionsConfig) {
         this.parameter = parameter;
         this.tableMetadataManager = tableMetadataManager;
         this.queryStore = queryStore;
@@ -72,6 +75,11 @@ public abstract class Action<ParameterType extends ActionRequest> implements Cal
         this.cacheManager = cacheManager;
         this.connection = connection;
         this.dataStore = dataStore;
+        this.restrictionsConfig = restrictionsConfig;
+    }
+
+    public RestrictionsConfig getRestrictionsConfig() {
+        return restrictionsConfig;
     }
 
     public String cacheKey() {

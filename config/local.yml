@@ -6,7 +6,7 @@ http:
 elasticsearch:
   hosts:
   - localhost
-  cluster: foxtrot
+  cluster: elasticsearch
   tableNamePrefix: foxtrot
 
 hbase:
@@ -27,3 +27,9 @@ deletionconfig:
   active: true
   interval: 86400
   initialdelay: 60
+
+restrictionsConfig:
+  limitupperbound: -1  # Use -1 for no limit
+  betweenduration: 4d     # Leave blank for no limit
+  lastduration: 2d       # Leave blank for no limit
+  fieldsize: 100          # Use -1 for no limit

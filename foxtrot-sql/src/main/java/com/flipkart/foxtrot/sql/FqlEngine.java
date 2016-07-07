@@ -6,6 +6,8 @@ import com.flipkart.foxtrot.common.Table;
 import com.flipkart.foxtrot.common.TableFieldMapping;
 import com.flipkart.foxtrot.core.querystore.QueryExecutor;
 import com.flipkart.foxtrot.core.querystore.QueryStore;
+//import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.flipkart.foxtrot.sql.query.FqlActionQuery;
 import com.flipkart.foxtrot.sql.query.FqlDescribeTable;
@@ -26,17 +28,19 @@ public class FqlEngine {
     private QueryStore queryStore;
     private QueryExecutor queryExecutor;
     private ObjectMapper mapper;
+    private final RestrictionsConfig restrictionsConfig;
 
-    public FqlEngine(TableMetadataManager tableMetadataManager, QueryStore queryStore, QueryExecutor queryExecutor, ObjectMapper mapper) {
+    public FqlEngine(TableMetadataManager tableMetadataManager, QueryStore queryStore, QueryExecutor queryExecutor, ObjectMapper mapper, RestrictionsConfig restrictionsConfig) {
         this.tableMetadataManager = tableMetadataManager;
         this.queryStore = queryStore;
         this.queryExecutor = queryExecutor;
         this.mapper = mapper;
+        this.restrictionsConfig = restrictionsConfig;
     }
 
     public FlatRepresentation parse(final String fql) throws Exception {
         QueryTranslator translator = new QueryTranslator();
-        FqlQuery query = translator.translate(fql);
+        FqlQuery query = translator.translate(fql, restrictionsConfig);
         FlatRepresentation response = new QueryProcessor(tableMetadataManager, queryStore, queryExecutor, mapper).process(query);
         logger.debug("Flat Response: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response));
         return response;
@@ -47,10 +51,9 @@ public class FqlEngine {
         private QueryStore queryStore;
         private QueryExecutor queryExecutor;
         private ObjectMapper mapper;
-
         private FlatRepresentation result;
 
-        private QueryProcessor(TableMetadataManager tableMetadataManager, QueryStore queryStore, QueryExecutor queryExecutor, ObjectMapper mapper) {
+        private QueryProcessor(TableMetadataManager tableMetadataManager, QueryStore queryStore, QueryExecutor queryExecutor, ObjectMapper mapper/*, RestrictionsConfig restrictionsConfig*/) {
             this.tableMetadataManager = tableMetadataManager;
             this.queryStore = queryStore;
             this.queryExecutor = queryExecutor;

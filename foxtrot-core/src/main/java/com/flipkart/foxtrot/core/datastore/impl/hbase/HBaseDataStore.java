@@ -112,8 +112,10 @@ public class HBaseDataStore implements DataStore {
         if (document == null || document.getData() == null || document.getId() == null) {
             throw FoxtrotExceptions.createBadRequestException(table.getName(), "Invalid Input Document");
         }
-        if (!isValid(document.getData())) {
-            throw FoxtrotExceptions.createBadRequestException(table.getName(), "Invalid Input Document");
+        if (restrictionsConfig.getFieldsize() > 0) {
+            if (!isValid(document.getData())) {
+                throw FoxtrotExceptions.createBadRequestException(table.getName(), "Invalid Input Document");
+            }
         }
 
         HTableInterface hTable = null;
@@ -163,9 +165,11 @@ public class HBaseDataStore implements DataStore {
                     errorMessages.add("null document data at index - " + i);
                     continue;
                 }
-                if (!isValid(document.getData())) {
-                    //errorMessages.add("invalid document data at index - " + i);
-                    continue;
+                if (restrictionsConfig.getFieldsize() > 0) {
+                    if (!isValid(document.getData())) {
+                        //errorMessages.add("invalid document data at index - " + i);
+                        continue;
+                    }
                 }
                 Document translatedDocument = translator.translate(table, document);
                 puts.add(getPutForDocument(translatedDocument));

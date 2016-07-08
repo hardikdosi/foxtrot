@@ -27,9 +27,9 @@ FqlTable.prototype = new Tile();
 
 FqlTable.prototype.render = function (data, animate) {
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Query : " + this.query);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Query : " + this.query);
     }
     var parent = $("#content-for-" + this.id);
 
@@ -64,7 +64,7 @@ FqlTable.prototype.isSetupDone = function () {
 
 FqlTable.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
-    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
+    this.title = modal.find(".tile-title").val()
     this.query = modal.find("#fql_query").val();
 };
 

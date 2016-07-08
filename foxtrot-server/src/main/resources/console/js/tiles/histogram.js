@@ -104,9 +104,9 @@ Histogram.prototype.renderWithCompare = function (data, dataPrevious, animate) {
         return;
     }
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Event rate for " + this.tables.selectedTable.name + " table");
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Event rate for " + this.tables.selectedTable.name + " table");
     }
 
     var parent = $("#content-for-" + this.id);
@@ -233,7 +233,7 @@ Histogram.prototype.getQuery = function (noOfDaysOld) {
 Histogram.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
     this.period = parseInt(modal.find(".refresh-period").val());
-    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val();
+    this.title = modal.find(".tile-title").val();
     var filters = modal.find(".selected-filters").val();
     if (filters != undefined && filters != "") {
         var selectedFilters = JSON.parse(filters);

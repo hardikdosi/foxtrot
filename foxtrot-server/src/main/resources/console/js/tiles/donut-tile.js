@@ -32,9 +32,9 @@ DonutTile.prototype = new Tile();
 
 DonutTile.prototype.render = function (data, animate) {
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Group by " + this.eventTypeFieldName);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Group by " + this.eventTypeFieldName);
     }
     var parent = $("#content-for-" + this.id);
 
@@ -177,7 +177,7 @@ DonutTile.prototype.isSetupDone = function () {
 
 DonutTile.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
-    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
+    this.title = modal.find(".tile-title").val()
     this.period = parseInt(modal.find(".refresh-period").val());
     this.eventTypeFieldName = modal.find(".pie-chart-field").val();
     var values = modal.find(".selected-values").val();

@@ -30,9 +30,9 @@ StackedBar.prototype = new Tile();
 
 StackedBar.prototype.render = function (data, animate) {
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Trend for " + this.eventTypeFieldName);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Trend for " + this.eventTypeFieldName);
     }
 
     var parent = $("#content-for-" + this.id);
@@ -203,7 +203,7 @@ StackedBar.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
     this.period = parseInt(modal.find(".refresh-period").val());
     this.eventTypeFieldName = modal.find(".stacked-bar-chart-field").val();
-    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
+    this.title = modal.find(".tile-title").val()
     var filters = modal.find(".selected-filters").val();
     if (filters != undefined && filters != "") {
         var selectedFilters = JSON.parse(filters);

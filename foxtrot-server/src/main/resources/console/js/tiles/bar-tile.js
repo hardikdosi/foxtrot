@@ -35,9 +35,9 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
     var parentWidth = parent.width();
 
     if (this.title) {
-        $(tileElement).find(".tile-header").text(this.title);
+        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
+        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Group by " + this.eventTypeFieldName);
     }
 
     var chartLabel = null;
@@ -255,9 +255,9 @@ BarTile.prototype.render = function (data, animate) {
     var parentWidth = parent.width();
 
     if (this.title) {
-        $(tileElement).find(".tile-header").text(this.title);
+        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
+        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Group by " + this.eventTypeFieldName);
     }
 
     var chartLabel = null;
@@ -424,7 +424,7 @@ BarTile.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
     this.period = parseInt(modal.find(".refresh-period").val());
     this.eventTypeFieldName = modal.find(".bar-chart-field").val();
-    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val();
+    this.title = modal.find(".tile-title").val();
     var values = modal.find(".selected-values").val();
     if (values) {
         this.selectedValues = values.replace(/ /g, "").split(",");

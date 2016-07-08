@@ -45,9 +45,9 @@ StatsTrend.prototype = new Tile();
 
 StatsTrend.prototype.render = function (data, animate) {
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Stats for " + this.eventTypeFieldName);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Stats for " + this.eventTypeFieldName);
     }
 
     var parent = $("#content-for-" + this.id);
@@ -206,7 +206,7 @@ StatsTrend.prototype.configChanged = function () {
 StatsTrend.prototype.populateSetupDialog = function () {
     var modal = $(this.setupModalName);
     var select = $("#statstrend-bar-chart-field");
-    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
+    this.title = modal.find(".tile-title").val()
     select.find('option').remove();
     for (var i = this.wtableFields.length - 1; i >= 0; i--) {
         select.append('<option>' + this.wtableFields[i].field + '</option>');

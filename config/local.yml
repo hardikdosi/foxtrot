@@ -29,7 +29,7 @@ deletionconfig:
   initialdelay: 60
 
 restrictionsConfig:
-  limitupperbound: -1  # Use -1 for no limit
-  betweenduration: 4d     # Leave blank for no limit
-  lastduration: 2d       # Leave blank for no limit
-  fieldsize: 100          # Use -1 for no limit
+  limitupperbound: 1000000  # Use -1 for no limit
+  betweenduration: 7d    # Leave blank for no limit
+  lastduration: 15d      # Leave blank for no limit
+  fieldsize: 1000         # Use -1 for no limit

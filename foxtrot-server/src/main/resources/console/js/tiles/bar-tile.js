@@ -409,7 +409,7 @@ BarTile.prototype.getQuery = function (noOfDaysOld) {
         }
         return JSON.stringify({
             opcode: "group",
-            table: this.tables.selectedTable.name,
+            table: this.wtable.name,
             filters: filters,
             nesting: [this.eventTypeFieldName]
         });
@@ -424,7 +424,7 @@ BarTile.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
     this.period = parseInt(modal.find(".refresh-period").val());
     this.eventTypeFieldName = modal.find(".bar-chart-field").val();
-    this.title = modal.find(".tile-title").val();
+    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val();
     var values = modal.find(".selected-values").val();
     if (values) {
         this.selectedValues = values.replace(/ /g, "").split(",");
@@ -452,8 +452,8 @@ BarTile.prototype.populateSetupDialog = function () {
     modal.find(".tile-title").val(this.title)
     var select = modal.find("#bar-chart-field");
     select.find('option').remove();
-    for (var i = this.tables.currentTableFieldMappings.length - 1; i >= 0; i--) {
-        select.append('<option>' + this.tables.currentTableFieldMappings[i].field + '</option>');
+    for (var i = this.wtableFields.length - 1; i >= 0; i--) {
+        select.append('<option>' + this.wtableFields[i].field + '</option>');
     }
 
     if (this.eventTypeFieldName) {
@@ -476,6 +476,7 @@ BarTile.prototype.registerSpecificData = function (representation) {
     representation['eventTypeFieldName'] = this.eventTypeFieldName;
     representation['selectedValues'] = this.selectedValues;
     representation['showLegend'] = this.showLegend;
+    representation['doCompare'] = this.doCompare;
     if (this.selectedFilters) {
         representation['selectedFilters'] = btoa(JSON.stringify(this.selectedFilters));
     }
@@ -485,6 +486,7 @@ BarTile.prototype.loadSpecificData = function (representation) {
     this.period = representation['period'];
     this.eventTypeFieldName = representation['eventTypeFieldName'];
     this.selectedValues = representation['selectedValues'];
+    this.doCompare = representation['doCompare'];
     if (representation.hasOwnProperty('selectedFilters')) {
         this.selectedFilters = JSON.parse(atob(representation['selectedFilters']));
     }

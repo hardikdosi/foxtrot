@@ -222,7 +222,7 @@ Histogram.prototype.getQuery = function (noOfDaysOld) {
         }
         return JSON.stringify({
             opcode: "histogram",
-            table: this.tables.selectedTable.name,
+            table: this.wtable.name,
             filters: filters,
             field: "_timestamp",
             period: periodFromWindow($("#" + this.id).find(".period-select").val())
@@ -233,7 +233,7 @@ Histogram.prototype.getQuery = function (noOfDaysOld) {
 Histogram.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
     this.period = parseInt(modal.find(".refresh-period").val());
-    this.title = modal.find(".tile-title").val();
+    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val();
     var filters = modal.find(".selected-filters").val();
     if (filters != undefined && filters != "") {
         var selectedFilters = JSON.parse(filters);

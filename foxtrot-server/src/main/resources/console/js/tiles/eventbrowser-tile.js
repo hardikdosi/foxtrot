@@ -74,7 +74,7 @@ EventBrowser.prototype.getQuery = function () {
     }
     return JSON.stringify({
         opcode: "query",
-        table: this.tables.selectedTable.name,
+        table: this.wtable.name,
         sort: {
             field: "_timestamp",
             order: "desc"
@@ -91,7 +91,7 @@ EventBrowser.prototype.isSetupDone = function () {
 EventBrowser.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
     this.count = parseInt(modal.find(".event-count").val());
-    this.title = modal.find(".tile-title").val();
+    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val();
     // this.period = parseInt(modal.find(".refresh-period").val());
     // this.eventTypeFieldName = modal.find(".bar-chart-field").val();
 };

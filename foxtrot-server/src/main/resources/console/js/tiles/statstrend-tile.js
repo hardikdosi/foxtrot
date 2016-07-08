@@ -173,7 +173,7 @@ StatsTrend.prototype.getQuery = function () {
         }
         return JSON.stringify({
             opcode: "statstrend",
-            table: this.tables.selectedTable.name,
+            table: this.wtable.name,
             filters: filters,
             field: this.eventTypeFieldName,
             period: periodFromWindow($("#" + this.id).find(".period-select").val())
@@ -206,10 +206,10 @@ StatsTrend.prototype.configChanged = function () {
 StatsTrend.prototype.populateSetupDialog = function () {
     var modal = $(this.setupModalName);
     var select = $("#statstrend-bar-chart-field");
-    this.title = modal.find(".tile-title").val()
+    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
     select.find('option').remove();
-    for (var i = this.tables.currentTableFieldMappings.length - 1; i >= 0; i--) {
-        select.append('<option>' + this.tables.currentTableFieldMappings[i].field + '</option>');
+    for (var i = this.wtableFields.length - 1; i >= 0; i--) {
+        select.append('<option>' + this.wtableFields[i].field + '</option>');
     }
     ;
     if (this.eventTypeFieldName) {

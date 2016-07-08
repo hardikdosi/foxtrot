@@ -164,7 +164,7 @@ DonutTile.prototype.getQuery = function () {
         }
         return JSON.stringify({
             opcode: "group",
-            table: this.tables.selectedTable.name,
+            table: this.wtable.name,
             filters: filters,
             nesting: [this.eventTypeFieldName]
         });
@@ -177,7 +177,7 @@ DonutTile.prototype.isSetupDone = function () {
 
 DonutTile.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
-    this.title = modal.find(".tile-title").val()
+    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
     this.period = parseInt(modal.find(".refresh-period").val());
     this.eventTypeFieldName = modal.find(".pie-chart-field").val();
     var values = modal.find(".selected-values").val();
@@ -206,8 +206,8 @@ DonutTile.prototype.populateSetupDialog = function () {
     modal.find(".tile-title").val(this.title)
     var select = $("#pie_field");
     select.find('option').remove();
-    for (var i = this.tables.currentTableFieldMappings.length - 1; i >= 0; i--) {
-        select.append('<option>' + this.tables.currentTableFieldMappings[i].field + '</option>');
+    for (var i = this.wtableFields.length - 1; i >= 0; i--) {
+        select.append('<option>' + this.wtableFields[i].field + '</option>');
     }
     ;
     if (this.eventTypeFieldName) {

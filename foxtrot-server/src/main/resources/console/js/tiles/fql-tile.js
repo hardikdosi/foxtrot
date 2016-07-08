@@ -64,7 +64,7 @@ FqlTable.prototype.isSetupDone = function () {
 
 FqlTable.prototype.configChanged = function () {
     var modal = $(this.setupModalName);
-    this.title = modal.find(".tile-title").val()
+    this.title = "[ " + this.wtable.name + " ] " + modal.find(".tile-title").val()
     this.query = modal.find("#fql_query").val();
 };
 

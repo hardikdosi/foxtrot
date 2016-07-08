@@ -59,12 +59,18 @@ function Tile() {
     this.url = hostDetails.url("/foxtrot/v1/analytics");
     this.contentType = "application/json";
     this.httpMethod = "POST";
+    this.wtable = null;
+    this.wtableFields = null;
 }
 
 Tile.prototype.init = function (id, queue, tables) {
     this.id = id;
     this.queue = queue;
     this.tables = tables;
+    if (!this.wtable && !this.wtableFields) {
+        this.wtable = tables.selectedTable;
+        this.wtableFields = tables.currentTableFieldMappings;
+    }
     if (this.refresh) {
         queue.enqueue(this.id, $.proxy(this.reloadData, this));
     }
@@ -160,7 +166,9 @@ Tile.prototype.getRepresentation = function () {
         typeName: this.typeName,
         width: this.width,
         height: this.height,
-        title: this.title
+        title: this.title,
+        wtable: this.wtable,
+        wtableFields: this.wtableFields
     };
     this.registerSpecificData(representation);
     return representation;
@@ -171,6 +179,8 @@ Tile.prototype.loadTileFromRepresentation = function (representation) {
     this.width = representation.width;
     this.height = representation.height;
     this.title = representation.title;
+    this.wtable = representation.wtable;
+    this.wtableFields = representation.wtableFields;
     this.loadSpecificData(representation);
 }
 

@@ -30,9 +30,9 @@ Histogram.prototype.render = function (data, animate) {
         return;
     }
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Event rate for " + this.tables.selectedTable.name + " table");
+        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Event rate for " + this.tables.selectedTable.name + " table");
     }
 
     var parent = $("#content-for-" + this.id);

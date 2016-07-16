@@ -29,10 +29,13 @@ function StackedBar() {
 StackedBar.prototype = new Tile();
 
 StackedBar.prototype.render = function (data, animate) {
+    var tileElement = $("#" + this.id);
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Trend for " + this.eventTypeFieldName);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 
     var parent = $("#content-for-" + this.id);
@@ -216,18 +219,31 @@ StackedBar.prototype.configChanged = function () {
 };
 
 StackedBar.prototype.populateSetupDialog = function () {
+    $.ajax({
+        url: hostDetails.url("/foxtrot/v1/tables/" + this.wtable.name + "/fields"),
+        contentType: "application/json",
+        context: this,
+        success: $.proxy(function(data) {
+            this.wtableFields = data.mappings;
+            if(this.wtableFields) {
+                this.wtableFields.sort(function(lhs, rhs){
+                    return ((lhs.field > rhs.field) ? 1 : ((lhs.field < rhs.field) ? -1 : 0));
+                });
+            }
+            var select = $("#stacked-bar-chart-field");
+            select.find('option').remove();
+            for (var i = this.wtableFields.length - 1; i >= 0; i--) {
+                select.append('<option>' + this.wtableFields[i].field + '</option>');
+            }
+
+            if (this.eventTypeFieldName) {
+                select.val(this.eventTypeFieldName);
+            }
+            select.selectpicker('refresh');
+        }, this)
+    });
     var modal = $(this.setupModalName);
-    modal.find(".tile-title").val(this.title)
-    var select = $("#stacked-bar-chart-field");
-    select.find('option').remove();
-    for (var i = this.wtableFields.length - 1; i >= 0; i--) {
-        select.append('<option>' + this.wtableFields[i].field + '</option>');
-    }
-    ;
-    if (this.eventTypeFieldName) {
-        select.val(this.eventTypeFieldName);
-    }
-    select.selectpicker('refresh');
+    modal.find(".tile-title").val(this.title);
     modal.find(".refresh-period").val(( 0 != this.period) ? this.period : "");
     if (this.selectedFilters) {
         modal.find(".selected-filters").val(JSON.stringify(this.selectedFilters));

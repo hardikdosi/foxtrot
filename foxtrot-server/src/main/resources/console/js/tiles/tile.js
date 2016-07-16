@@ -84,45 +84,14 @@ Tile.prototype.cleanup = function () {
 
 Tile.prototype.reloadData = function () {
 
-    this.query = this.getQuery(0);
-    this.previousQuery = this.getQuery(1);
+    this.query = this.getQuery();
+    //this.previousQuery = this.getQuery(1);
 
-    if (!this.query || !this.previousQuery) {
+    if (!this.query/* || !this.previousQuery*/) {
         console.log("query setup incomplete " + this.id);
         return;
     }
 
-    if (this.getCompareStatus()) {
-        $.when($.ajax(
-            {                       // New Code
-                method: this.httpMethod,
-                dataType: 'json',
-                accepts: {
-                    json: 'application/json'
-                },
-                url: this.url,
-                contentType: this.contentType,
-                timeout: this.queue.timeout,
-                data: this.query
-
-            }), $.ajax(
-            {
-                method: this.httpMethod,
-                dataType: 'json',
-                accepts: {
-                    json: 'application/json'
-                },
-                url: this.url,
-                contentType: this.contentType,
-                timeout: this.queue.timeout,
-                data: this.previousQuery
-
-            })).then($.proxy(this.newDataReceived, this),
-            function() {
-                error("Incorrect Tile Setup. Please make sure that the parameter values are within limits.")
-            });
-
-    } else {
         $.ajax({
             method: this.httpMethod,
             dataType: 'json',
@@ -139,16 +108,16 @@ Tile.prototype.reloadData = function () {
                 error("Incorrect Tile Setup. Please make sure that the parameter values are within limits.");
             }
         });
-    }
 };
 
-Tile.prototype.newDataReceived = function (data, dataPrevious) {
+Tile.prototype.newDataReceived = function (data) {
     //this.cachedData = data;
 
-    if (dataPrevious === "success") {
-        this.render(data, true);
+    if (data.hasOwnProperty("resultPrevious")) {
+        this.renderWithCompare(data, true);
+        console.log(">>>>>>>", data);
     } else {
-        this.renderWithCompare(data[0], dataPrevious[0], true);
+        this.render(data, true);
     }
 };
 
@@ -219,8 +188,6 @@ Tile.prototype.getUniqueValues = function () {
 Tile.prototype.filterValues = function (values) {
 }
 
-Tile.prototype.getCompareStatus = function() {
-};
 
 
 

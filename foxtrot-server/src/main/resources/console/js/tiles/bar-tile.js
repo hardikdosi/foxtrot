@@ -24,20 +24,22 @@ function BarTile() {
     this.selectedFilters = null;
     this.uniqueValues = [];
     //this.uiFilteredValues = [];
-    this.doCompare = false;
+    this.offset = "0m";
 }
 
 BarTile.prototype = new Tile();
 
-BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
+BarTile.prototype.renderWithCompare = function (data, animate) {
     var tileElement = $("#" + this.id);
     var parent = $("#content-for-" + this.id);
     var parentWidth = parent.width();
 
     if (this.title) {
-        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Group by " + this.eventTypeFieldName);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 
     var chartLabel = null;
@@ -91,7 +93,7 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
     }
 
 
-    if (!data.hasOwnProperty("result") && !dataPrevious.hasOwnProperty("result")) {
+    if (!data.hasOwnProperty("result") && !data.hasOwnProperty("resultPrevious")) {
         canvas.empty();
         if (this.showLegend) {
             legendArea.empty();
@@ -120,12 +122,12 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
             tmpData[property]["curr"] = data.result[property];
         }
     }
-    if (dataPrevious.hasOwnProperty("result")) {
-        for (property in dataPrevious.result) {
+    if (data.hasOwnProperty("resultPrevious")) {
+        for (property in data.resultPrevious) {
             if (!tmpData.hasOwnProperty(property)) {
                 tmpData[property] = new Object();
             }
-            tmpData[property]["prev"] = dataPrevious.result[property];
+            tmpData[property]["prev"] = data.resultPrevious[property];
         }
     }
     if (0 == Object.keys(tmpData).length) {
@@ -143,7 +145,7 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
         var dataElement = [i, count];
         if (this.isValueVisible(property)) {
             columns.push(dataElement);
-            flatData.push({label: property, data: count, color: "#AA4643", day: "Current"});
+            flatData.push({label: property, data: count, color: "#44B3C2", day: "Current"});
             ticks.push([i, property]);
         }
         count = 0;
@@ -153,7 +155,7 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
         dataElement = [i, count];
         if (this.isValueVisible(property)) {
             previousColumns.push(dataElement);
-            flatDataPrevious.push({label: property, data: count, color: "#89A54E", day: "Previous"});
+            flatDataPrevious.push({label: property, data: count, color: "#E45641", day: "Previous"});
 
         }
         i++;
@@ -170,10 +172,10 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
             align: "center",
             lineWidth: 1.0,
             fill: true,
-            fillColor: "#AA4643",
+            fillColor: "#44B3C2",
             order: 2
         },
-        color: "#AA4643"
+        color: "#44B3C2"
     });
     combinedData.push({
         label: "Previous",
@@ -187,10 +189,10 @@ BarTile.prototype.renderWithCompare = function (data, dataPrevious, animate) {
             align: "center",
             lineWidth: 1.0,
             fill: true,
-            fillColor: "#89A54E",
+            fillColor: "#E45641",
             order: 1
         },
-        color: "#89A54E"
+        color: "#E45641"
     });
     // }
 
@@ -255,9 +257,11 @@ BarTile.prototype.render = function (data, animate) {
     var parentWidth = parent.width();
 
     if (this.title) {
-        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $(tileElement).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Group by " + this.eventTypeFieldName);
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 
     var chartLabel = null;
@@ -384,16 +388,11 @@ BarTile.prototype.render = function (data, animate) {
     drawLegend(flatData, legendArea);
 };
 
-BarTile.prototype.getQuery = function (noOfDaysOld) {
-    var days = 0;
-    if (noOfDaysOld) {
-        days = noOfDaysOld;
-    }
-
+BarTile.prototype.getQuery = function () {
     if (this.eventTypeFieldName && this.period != 0) {
         var filters = [];
 
-        filters.push(timeValue(this.period, $("#" + this.id).find(".period-select").val(), days));
+        filters.push(timeValue(this.period, $("#" + this.id).find(".period-select").val()));
 
         if (this.selectedValues) {
             filters.push({
@@ -411,7 +410,8 @@ BarTile.prototype.getQuery = function (noOfDaysOld) {
             opcode: "group",
             table: this.wtable.name,
             filters: filters,
-            nesting: [this.eventTypeFieldName]
+            nesting: [this.eventTypeFieldName],
+            offset: this.offset
         });
     }
 };
@@ -442,24 +442,37 @@ BarTile.prototype.configChanged = function () {
         this.selectedFilters = null;
     }
     this.showLegend = modal.find(".bar-show-legend").prop('checked');
-    this.doCompare = modal.find(".bar-do-compare").prop('checked');
+    this.offset = modal.find(".tile-offset").val();
     $("#content-for-" + this.id).find(".chartcanvas").remove();
     $("#content-for-" + this.id).find(".pielabel").remove();
 };
 
 BarTile.prototype.populateSetupDialog = function () {
-    var modal = $(this.setupModalName);
-    modal.find(".tile-title").val(this.title)
-    var select = modal.find("#bar-chart-field");
-    select.find('option').remove();
-    for (var i = this.wtableFields.length - 1; i >= 0; i--) {
-        select.append('<option>' + this.wtableFields[i].field + '</option>');
-    }
+    $.ajax({
+        url: hostDetails.url("/foxtrot/v1/tables/" + this.wtable.name + "/fields"),
+        contentType: "application/json",
+        context: this,
+        success: $.proxy(function(data) {
+            this.wtableFields = data.mappings;
+            if(this.wtableFields) {
+                this.wtableFields.sort(function(lhs, rhs){
+                    return ((lhs.field > rhs.field) ? 1 : ((lhs.field < rhs.field) ? -1 : 0));
+                });
+            }
+            var select = modal.find("#bar-chart-field");
+            select.find('option').remove();
+            for (var i = this.wtableFields.length - 1; i >= 0; i--) {
+                select.append('<option>' + this.wtableFields[i].field + '</option>');
+            }
 
-    if (this.eventTypeFieldName) {
-        select.val(this.eventTypeFieldName);
-    }
-    select.selectpicker('refresh');
+            if (this.eventTypeFieldName) {
+                select.val(this.eventTypeFieldName);
+            }
+            select.selectpicker('refresh');
+        }, this)
+    });
+    var modal = $(this.setupModalName);
+    modal.find(".tile-title").val(this.title);
     modal.find(".refresh-period").val(( 0 != this.period) ? this.period : "");
     if (this.selectedValues) {
         modal.find(".selected-values").val(this.selectedValues.join(", "));
@@ -468,7 +481,7 @@ BarTile.prototype.populateSetupDialog = function () {
         modal.find(".selected-filters").val(JSON.stringify(this.selectedFilters));
     }
     modal.find(".bar-show-legend").prop('checked', this.showLegend);
-    modal.find(".bar-do-compare").prop('checked', this.doCompare);
+    modal.find(".tile-offset").val(this.offset);
 };
 
 BarTile.prototype.registerSpecificData = function (representation) {
@@ -476,7 +489,7 @@ BarTile.prototype.registerSpecificData = function (representation) {
     representation['eventTypeFieldName'] = this.eventTypeFieldName;
     representation['selectedValues'] = this.selectedValues;
     representation['showLegend'] = this.showLegend;
-    representation['doCompare'] = this.doCompare;
+    representation['offset'] = this.offset;
     if (this.selectedFilters) {
         representation['selectedFilters'] = btoa(JSON.stringify(this.selectedFilters));
     }
@@ -486,7 +499,7 @@ BarTile.prototype.loadSpecificData = function (representation) {
     this.period = representation['period'];
     this.eventTypeFieldName = representation['eventTypeFieldName'];
     this.selectedValues = representation['selectedValues'];
-    this.doCompare = representation['doCompare'];
+    this.offset = representation['offset'];
     if (representation.hasOwnProperty('selectedFilters')) {
         this.selectedFilters = JSON.parse(atob(representation['selectedFilters']));
     }
@@ -524,7 +537,3 @@ BarTile.prototype.filterValues = function (values) {
         this.uiFilteredValues[values[i]] = 1;
     }
 }
-
-BarTile.prototype.getCompareStatus = function () {
-    return this.doCompare;
-};

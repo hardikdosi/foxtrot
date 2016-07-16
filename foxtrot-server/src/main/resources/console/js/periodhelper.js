@@ -11,13 +11,8 @@ function periodFromWindow(periodString) {
     return "minutes";
 }
 
-function timeValue(period, selectedPeriodString, noOfDaysOld) {
-    var days = 0;
-    if (noOfDaysOld) {
-        days = noOfDaysOld;
-    }
-
-    var timestamp = new Date(new Date() - days * 24 * 3600 * 1000).getTime();
+function timeValue(period, selectedPeriodString) {
+    var timestamp = new Date().getTime();
 
     if(selectedPeriodString === "custom") {
         return {

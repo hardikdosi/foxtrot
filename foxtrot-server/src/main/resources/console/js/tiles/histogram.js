@@ -103,10 +103,13 @@ Histogram.prototype.renderWithCompare = function (data, dataPrevious, animate) {
     if (this.period == 0) {
         return;
     }
+    var tileElement = $("#" + this.id);
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Event rate for " + this.tables.selectedTable.name + " table");
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 
     var parent = $("#content-for-" + this.id);

@@ -130,10 +130,26 @@ font-size: small;
     left: 0px;
     font-weight: bold;
     color: white;
-    font-style: italic;
+    /*font-style: italic;*/
     padding-left: 10px;
     padding-top: 3px;
     font-size: small;
+}
+
+.tile-header-table {
+    width: 100%;
+    height: 25px;
+    background: rgb(76, 79, 83);
+    margin: 0px;
+    position: absolute;
+    top: 25px;
+    left: 0px;
+    font-weight: bold;
+    color: white;
+    padding-left: 10px;
+    padding-top: 3px;
+    font-size: small;
+    z-index: 100;
 }
 
 .tile-container{
@@ -198,7 +214,7 @@ background-image: linear-gradient(to right bottom, #828D94 36%, #475361 100%);
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  padding-top: 28px;
+  padding-top: 53px;
 }
 
 .c3-chart-line {
@@ -208,7 +224,7 @@ background-image: linear-gradient(to right bottom, #828D94 36%, #475361 100%);
 path {
   stroke-width: 2px;
 }
-.c3-axis-x: {
+.c3-axis-x {
   stroke-width: 2px;
 }
 

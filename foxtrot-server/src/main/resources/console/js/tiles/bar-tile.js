@@ -34,8 +34,10 @@ BarTile.prototype.render = function (data, animate) {
     var parentWidth = parent.width();
 
     if (this.title) {
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
         $(tileElement).find(".tile-header").text(this.title);
     } else {
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
         $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 
@@ -183,7 +185,7 @@ BarTile.prototype.getQuery = function () {
         }
         return JSON.stringify({
             opcode: "group",
-            table: this.tables.selectedTable.name,
+            table: this.wtable.name,
             filters: filters,
             nesting: [this.eventTypeFieldName]
         });
@@ -221,18 +223,31 @@ BarTile.prototype.configChanged = function () {
 };
 
 BarTile.prototype.populateSetupDialog = function () {
+    $.ajax({
+        url: hostDetails.url("/foxtrot/v1/tables/" + this.wtable.name + "/fields"),
+        contentType: "application/json",
+        context: this,
+        success: $.proxy(function(data) {
+            this.wtableFields = data.mappings;
+            if(this.wtableFields) {
+                this.wtableFields.sort(function(lhs, rhs){
+                    return ((lhs.field > rhs.field) ? 1 : ((lhs.field < rhs.field) ? -1 : 0));
+                });
+            }
+            var select = modal.find("#bar-chart-field");
+            select.find('option').remove();
+            for (var i = this.wtableFields.length - 1; i >= 0; i--) {
+                select.append('<option>' + this.wtableFields[i].field + '</option>');
+            }
+
+            if (this.eventTypeFieldName) {
+                select.val(this.eventTypeFieldName);
+            }
+            select.selectpicker('refresh');
+        }, this)
+    });
     var modal = $(this.setupModalName);
-    modal.find(".tile-title").val(this.title)
-    var select = modal.find("#bar-chart-field");
-    select.find('option').remove();
-    for (var i = this.tables.currentTableFieldMappings.length - 1; i >= 0; i--) {
-        select.append('<option>' + this.tables.currentTableFieldMappings[i].field + '</option>');
-    }
-    ;
-    if (this.eventTypeFieldName) {
-        select.val(this.eventTypeFieldName);
-    }
-    select.selectpicker('refresh');
+    modal.find(".tile-title").val(this.title);
     modal.find(".refresh-period").val(( 0 != this.period) ? this.period : "");
     if (this.selectedValues) {
         modal.find(".selected-values").val(this.selectedValues.join(", "));

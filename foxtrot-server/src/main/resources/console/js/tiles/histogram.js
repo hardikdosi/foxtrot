@@ -28,10 +28,13 @@ Histogram.prototype.render = function (data, animate) {
     if (this.period == 0) {
         return;
     }
+    var tileElement = $("#" + this.id);
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Event rate for " + this.tables.selectedTable.name + " table");
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 
     var parent = $("#content-for-" + this.id);
@@ -48,9 +51,10 @@ Histogram.prototype.render = function (data, animate) {
     }
     var times = [];
     if (!data.hasOwnProperty('counts')) {
-        chartContent.empty();
+        canvas.empty();
         return;
     }
+    legendArea.empty();
     var rows = [];
     rows.push(['date', 'count']);
     for (var i = data.counts.length - 1; i >= 0; i--) {
@@ -88,6 +92,9 @@ Histogram.prototype.render = function (data, animate) {
         tooltipOpts: {
             content: "%y events at %x",
             defaultFormat: true
+        },
+        legend: {
+            show: false
         }
     });
 };
@@ -108,7 +115,7 @@ Histogram.prototype.getQuery = function () {
         }
         return JSON.stringify({
             opcode: "histogram",
-            table: this.tables.selectedTable.name,
+            table: this.wtable.name,
             filters: filters,
             field: "_timestamp",
             period: periodFromWindow($("#" + this.id).find(".period-select").val())

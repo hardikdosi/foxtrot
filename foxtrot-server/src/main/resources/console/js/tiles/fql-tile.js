@@ -26,10 +26,13 @@ function FqlTable() {
 FqlTable.prototype = new Tile();
 
 FqlTable.prototype.render = function (data, animate) {
+    var tileElement = $("#" + this.id);
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text(this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("Query : " + this.query);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
     var parent = $("#content-for-" + this.id);
 

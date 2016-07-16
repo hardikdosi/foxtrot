@@ -74,7 +74,7 @@ EventBrowser.prototype.getQuery = function () {
     }
     return JSON.stringify({
         opcode: "query",
-        table: this.tables.selectedTable.name,
+        table: this.wtable.name,
         sort: {
             field: "_timestamp",
             order: "desc"

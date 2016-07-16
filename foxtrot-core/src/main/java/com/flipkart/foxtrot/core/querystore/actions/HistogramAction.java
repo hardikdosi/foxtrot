@@ -32,13 +32,16 @@ import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsProvider;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchUtils;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.querystore.query.ElasticSearchQueryGenerator;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.yammer.dropwizard.util.Duration;
+import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
 
@@ -61,8 +64,9 @@ public class HistogramAction extends Action<HistogramRequest> {
                            QueryStore queryStore,
                            ElasticsearchConnection connection,
                            String cacheToken,
-                           CacheManager cacheManager) {
-        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager);
+                           CacheManager cacheManager,
+                           RestrictionsConfig restrictionsConfig) {
+        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager, restrictionsConfig);
     }
 
     @Override
@@ -117,7 +121,7 @@ public class HistogramAction extends Action<HistogramRequest> {
                     ElasticsearchUtils.getIndices(parameter.getTable(), parameter))
                     .setTypes(ElasticsearchUtils.DOCUMENT_TYPE_NAME)
                     .setIndicesOptions(Utils.indicesOptions())
-                    .setQuery(new ElasticSearchQueryGenerator(FilterCombinerType.and)
+                    .setQuery(new ElasticSearchQueryGenerator(FilterCombinerType.and, getRestrictionsConfig())
                             .genFilter(parameter.getFilters()))
                     .setSize(0)
                     .setSearchType(SearchType.COUNT)

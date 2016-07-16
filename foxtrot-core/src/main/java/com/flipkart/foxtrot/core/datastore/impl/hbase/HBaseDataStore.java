@@ -24,6 +24,7 @@ import com.flipkart.foxtrot.core.datastore.DataStore;
 import com.flipkart.foxtrot.core.exception.FoxtrotException;
 import com.flipkart.foxtrot.core.exception.FoxtrotExceptions;
 import com.flipkart.foxtrot.core.querystore.DocumentTranslator;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -35,11 +36,13 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.Iterator;
 
 /**
  * User: Santanu Sinha (santanu.sinha@flipkart.com)
@@ -58,11 +61,13 @@ public class HBaseDataStore implements DataStore {
     private final HbaseTableConnection tableWrapper;
     private final ObjectMapper mapper;
     private final DocumentTranslator translator;
+    private final RestrictionsConfig restrictionsConfig;
 
-    public HBaseDataStore(HbaseTableConnection tableWrapper, ObjectMapper mapper, DocumentTranslator translator) {
+    public HBaseDataStore(HbaseTableConnection tableWrapper, ObjectMapper mapper, DocumentTranslator translator, RestrictionsConfig restrictionsConfig) {
         this.tableWrapper = tableWrapper;
         this.mapper = mapper;
         this.translator = translator;
+        this.restrictionsConfig = restrictionsConfig;
     }
 
     @Override
@@ -80,12 +85,40 @@ public class HBaseDataStore implements DataStore {
         }
     }
 
+    public boolean isValid(JsonNode node) {
+        Iterator<String> fieldNames = node.fieldNames();
+        while(fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            JsonNode fieldValue = node.get(fieldName);
+            if (fieldValue.isObject()) {
+                if (isValid(fieldValue)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                String value = fieldValue.toString();
+                if (value.length() > restrictionsConfig.getFieldsize()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     @Timed
     public Document save(final Table table, Document document) throws FoxtrotException {
         if (document == null || document.getData() == null || document.getId() == null) {
             throw FoxtrotExceptions.createBadRequestException(table.getName(), "Invalid Input Document");
         }
+
+        if (restrictionsConfig.getFieldsize() > 0) {
+            if (!isValid(document.getData())) {
+                throw FoxtrotExceptions.createBadRequestException(table.getName(), "Invalid Input Document");
+            }
+        }
+
         HTableInterface hTable = null;
         Document translatedDocument = null;
         try {
@@ -132,6 +165,12 @@ public class HBaseDataStore implements DataStore {
                 if (document.getData() == null) {
                     errorMessages.add("null document data at index - " + i);
                     continue;
+                }
+                if (restrictionsConfig.getFieldsize() > 0) {
+                    if (!isValid(document.getData())) {
+                        //errorMessages.add("invalid document data at index - " + i);
+                        continue;
+                    }
                 }
                 Document translatedDocument = translator.translate(table, document);
                 puts.add(getPutForDocument(translatedDocument));

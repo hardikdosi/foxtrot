@@ -23,6 +23,7 @@ import com.flipkart.foxtrot.core.exception.MalformedQueryException;
 import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsProvider;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -39,8 +40,9 @@ public class NonCacheableAction extends Action<NonCacheableActionRequest> {
                               QueryStore queryStore,
                               ElasticsearchConnection connection,
                               String cacheToken,
-                              CacheManager cacheManager) {
-        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager);
+                              CacheManager cacheManager,
+                              RestrictionsConfig restrictionsConfig) {
+        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager, restrictionsConfig);
     }
 
     @Override

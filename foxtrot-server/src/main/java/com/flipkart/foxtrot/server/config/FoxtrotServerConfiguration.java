@@ -20,6 +20,7 @@ import com.flipkart.foxtrot.core.common.DataDeletionManagerConfig;
 import com.flipkart.foxtrot.core.datastore.impl.hbase.HbaseConfig;
 import com.flipkart.foxtrot.core.querystore.impl.ClusterConfig;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConfig;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.yammer.dropwizard.config.Configuration;
 import net.sourceforge.cobertura.CoverageIgnore;
 
@@ -45,11 +46,16 @@ public class FoxtrotServerConfiguration extends Configuration {
     @JsonProperty("deletionconfig")
     private final DataDeletionManagerConfig deletionManagerConfig;
 
+    @Valid
+    @JsonProperty
+    private final RestrictionsConfig restrictionsConfig;
+
     public FoxtrotServerConfiguration() {
         this.hbase = new HbaseConfig();
         this.elasticsearch = new ElasticsearchConfig();
         this.cluster = new ClusterConfig();
         this.deletionManagerConfig = new DataDeletionManagerConfig();
+        this.restrictionsConfig = new RestrictionsConfig();
     }
 
     public HbaseConfig getHbase() {
@@ -66,5 +72,9 @@ public class FoxtrotServerConfiguration extends Configuration {
 
     public DataDeletionManagerConfig getTableDataManagerConfig() {
         return deletionManagerConfig;
+    }
+
+    public RestrictionsConfig getRestrictionsConfig() {
+        return restrictionsConfig;
     }
 }

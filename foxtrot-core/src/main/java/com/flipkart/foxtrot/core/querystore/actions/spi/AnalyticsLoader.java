@@ -23,6 +23,7 @@ import com.flipkart.foxtrot.core.common.Action;
 import com.flipkart.foxtrot.core.datastore.DataStore;
 import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.google.common.collect.Maps;
 import com.yammer.dropwizard.lifecycle.Managed;
@@ -54,19 +55,22 @@ public class AnalyticsLoader implements Managed {
     private final ElasticsearchConnection elasticsearchConnection;
     private final CacheManager cacheManager;
     private final ObjectMapper objectMapper;
+    private final RestrictionsConfig restrictionsConfig;
 
     public AnalyticsLoader(TableMetadataManager tableMetadataManager,
                            DataStore dataStore,
                            QueryStore queryStore,
                            ElasticsearchConnection elasticsearchConnection,
                            CacheManager cacheManager,
-                           ObjectMapper objectMapper) {
+                           ObjectMapper objectMapper,
+                           RestrictionsConfig restrictionsConfig) {
         this.tableMetadataManager = tableMetadataManager;
         this.dataStore = dataStore;
         this.queryStore = queryStore;
         this.elasticsearchConnection = elasticsearchConnection;
         this.cacheManager = cacheManager;
         this.objectMapper = objectMapper;
+        this.restrictionsConfig = restrictionsConfig;
     }
 
     @SuppressWarnings("unchecked")
@@ -83,14 +87,16 @@ public class AnalyticsLoader implements Managed {
                         QueryStore.class,
                         ElasticsearchConnection.class,
                         String.class,
-                        CacheManager.class);
+                        CacheManager.class,
+                        RestrictionsConfig.class);
                 return constructor.newInstance(r,
                         tableMetadataManager,
                         dataStore,
                         queryStore,
                         elasticsearchConnection,
                         metadata.getCacheToken(),
-                        cacheManager);
+                        cacheManager,
+                        restrictionsConfig);
             }
         }
         return null;

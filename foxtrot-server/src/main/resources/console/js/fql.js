@@ -33,7 +33,10 @@ function runFql(dataType, renderFunction) {
                 }
             }
         },
-        success: renderFunction
+        success: renderFunction,
+        error: function() {
+            fqlError("Incorrect Query. Please make sure that the parameter values are within limits.");
+        }
     }).complete(function () {
         $("#wait-dialog").modal('hide');
     });

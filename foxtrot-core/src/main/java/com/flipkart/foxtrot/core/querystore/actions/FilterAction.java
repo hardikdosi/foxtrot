@@ -28,6 +28,7 @@ import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsProvider;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchUtils;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.querystore.query.ElasticSearchQueryGenerator;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import org.elasticsearch.ElasticsearchException;
@@ -56,8 +57,9 @@ public class FilterAction extends Action<Query> {
                         QueryStore queryStore,
                         ElasticsearchConnection connection,
                         String cacheToken,
-                        CacheManager cacheManager) {
-        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager);
+                        CacheManager cacheManager,
+                        RestrictionsConfig restrictionsConfig) {
+        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager, restrictionsConfig);
     }
 
     @Override
@@ -109,6 +111,12 @@ public class FilterAction extends Action<Query> {
             validationErrors.add("limit must be positive integer");
         }
 
+        if (getRestrictionsConfig().getLimitupperbound() != -1) {
+            if (parameter.getLimit() > getRestrictionsConfig().getLimitupperbound()) {
+                validationErrors.add("LIMIT Exceeded !");
+            }
+        }
+
         if (!CollectionUtils.isNullOrEmpty(validationErrors)) {
             throw FoxtrotExceptions.createMalformedQueryException(parameter, validationErrors);
         }
@@ -121,7 +129,7 @@ public class FilterAction extends Action<Query> {
             search = getConnection().getClient().prepareSearch(ElasticsearchUtils.getIndices(parameter.getTable(), parameter))
                     .setTypes(ElasticsearchUtils.DOCUMENT_TYPE_NAME)
                     .setIndicesOptions(Utils.indicesOptions())
-                    .setQuery(new ElasticSearchQueryGenerator(FilterCombinerType.and).genFilter(parameter.getFilters()))
+                    .setQuery(new ElasticSearchQueryGenerator(FilterCombinerType.and, getRestrictionsConfig()).genFilter(parameter.getFilters()))
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setFrom(parameter.getFrom())
                     .addSort(parameter.getSort().getField(),

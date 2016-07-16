@@ -92,7 +92,10 @@ Tile.prototype.reloadData = function () {
         contentType: this.contentType,
         timeout: this.queue.timeout,
         data: this.query,
-        success: $.proxy(this.newDataReceived, this)
+        success: $.proxy(this.newDataReceived, this),
+        error: function() {
+            error("Incorrect Tile Setup. Please make sure that the parameter values are within limits.");
+        }
     });
 };
 

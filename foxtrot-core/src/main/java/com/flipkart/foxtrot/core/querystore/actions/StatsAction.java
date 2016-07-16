@@ -18,9 +18,12 @@ import com.flipkart.foxtrot.core.querystore.QueryStore;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsProvider;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchConnection;
 import com.flipkart.foxtrot.core.querystore.impl.ElasticsearchUtils;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.flipkart.foxtrot.core.querystore.query.ElasticSearchQueryGenerator;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.sun.javafx.tools.resource.ResourceTraversal;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -31,10 +34,12 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.aggregations.metrics.percentiles.InternalPercentiles;
+import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.InternalExtendedStats;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by rishabh.goyal on 02/08/14.
@@ -49,8 +54,9 @@ public class StatsAction extends Action<StatsRequest> {
                        QueryStore queryStore,
                        ElasticsearchConnection connection,
                        String cacheToken,
-                       CacheManager cacheManager) {
-        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager);
+                       CacheManager cacheManager,
+                       RestrictionsConfig restrictionsConfig) {
+        super(parameter, tableMetadataManager, dataStore, queryStore, connection, cacheToken, cacheManager, restrictionsConfig);
     }
 
     @Override
@@ -109,7 +115,7 @@ public class StatsAction extends Action<StatsRequest> {
                     ElasticsearchUtils.getIndices(parameter.getTable(), parameter))
                     .setTypes(ElasticsearchUtils.DOCUMENT_TYPE_NAME)
                     .setIndicesOptions(Utils.indicesOptions())
-                    .setQuery(new ElasticSearchQueryGenerator(parameter.getCombiner()).genFilter(parameter.getFilters()))
+                    .setQuery(new ElasticSearchQueryGenerator(parameter.getCombiner(), getRestrictionsConfig()).genFilter(parameter.getFilters()))
                     .setSize(0)
                     .setSearchType(SearchType.COUNT);
 

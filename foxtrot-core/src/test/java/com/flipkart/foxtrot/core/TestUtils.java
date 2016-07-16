@@ -29,15 +29,18 @@ import com.flipkart.foxtrot.core.querystore.DocumentTranslator;
 import com.flipkart.foxtrot.core.querystore.actions.spi.ActionMetadata;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsLoader;
 import com.flipkart.foxtrot.core.querystore.actions.spi.AnalyticsProvider;
-import com.google.common.collect.Lists;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.tools.ant.types.resources.Restrict;
+import org.elasticsearch.common.collect.Lists;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.text.normalizer.ReplaceableString;
 
 import java.util.*;
 
@@ -52,6 +55,7 @@ public class TestUtils {
     private static final Logger logger = LoggerFactory.getLogger(TestUtils.class.getSimpleName());
     public static String TEST_TABLE_NAME = "test-table";
     public static Table TEST_TABLE = new Table(TEST_TABLE_NAME, 7);
+    public static RestrictionsConfig restrictionsConfig;
 
     public static DataStore getDataStore() throws FoxtrotException {
         HTableInterface tableInterface = MockHTable.create();
@@ -59,7 +63,7 @@ public class TestUtils {
         doReturn(tableInterface).when(tableConnection).getTable(Matchers.<Table>any());
         doReturn(new HbaseConfig()).when(tableConnection).getHbaseConfig();
         HBaseDataStore hBaseDataStore = new HBaseDataStore(tableConnection, new ObjectMapper(),
-                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV2()));
+                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV2()), restrictionsConfig);
         hBaseDataStore = spy(hBaseDataStore);
         return hBaseDataStore;
     }

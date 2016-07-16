@@ -25,6 +25,7 @@ import com.flipkart.foxtrot.core.TestUtils;
 import com.flipkart.foxtrot.core.exception.ErrorCode;
 import com.flipkart.foxtrot.core.exception.FoxtrotException;
 import com.flipkart.foxtrot.core.querystore.DocumentTranslator;
+import com.flipkart.foxtrot.core.querystore.impl.RestrictionsConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.hbase.client.Get;
@@ -52,6 +53,7 @@ public class HBaseDataStoreTest {
     private HTableInterface tableInterface;
     private HbaseTableConnection hbaseTableConnection;
     private ObjectMapper mapper = new ObjectMapper();
+    private RestrictionsConfig restrictionsConfig;
 
     private static final byte[] COLUMN_FAMILY = Bytes.toBytes("d");
     private static final byte[] DATA_FIELD_NAME = Bytes.toBytes("data");
@@ -66,14 +68,14 @@ public class HBaseDataStoreTest {
         when(hbaseTableConnection.getTable(Matchers.<Table>any())).thenReturn(tableInterface);
         when(hbaseTableConnection.getHbaseConfig()).thenReturn(new HbaseConfig());
         hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper,
-                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1()));
+                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1()), restrictionsConfig);
     }
 
     @Test
     public void testSaveSingle() throws Exception {
         // rawKeyVersion 1.0
         DocumentTranslator documentTranslator = new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1());
-        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator);
+        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator, restrictionsConfig);
         Document expectedDocument = new Document();
         expectedDocument.setId(UUID.randomUUID().toString());
         expectedDocument.setTimestamp(System.currentTimeMillis());
@@ -84,7 +86,7 @@ public class HBaseDataStoreTest {
 
         // rawKeyVersion 2.0
         documentTranslator = new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV2());
-        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator);
+        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator, restrictionsConfig);
         expectedDocument = new Document();
         expectedDocument.setId(UUID.randomUUID().toString());
         expectedDocument.setTimestamp(System.currentTimeMillis());
@@ -159,7 +161,7 @@ public class HBaseDataStoreTest {
     @Test
     public void testSaveBulk() throws Exception {
         DocumentTranslator documentTranslator = new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1());
-        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator);
+        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator, restrictionsConfig);
 
         List<Document> documents = Lists.newArrayList();
         for (int i = 0; i < 10; i++) {
@@ -274,7 +276,7 @@ public class HBaseDataStoreTest {
         // before rawKey versioning came into place)
         hbaseDataStore = new HBaseDataStore(hbaseTableConnection,
                 mapper,
-                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1()));
+                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1()), restrictionsConfig);
 
         String id = UUID.randomUUID().toString();
         long timestamp = System.currentTimeMillis();
@@ -289,7 +291,7 @@ public class HBaseDataStoreTest {
         // rawKeyVersion 1.0
         hbaseDataStore = new HBaseDataStore(hbaseTableConnection,
                 mapper,
-                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1()));
+                new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV1()), restrictionsConfig);
 
         id = UUID.randomUUID().toString();
         data = mapper.valueToTree(Collections.singletonMap("TEST_NAME", "SINGLE_SAVE_TEST"));
@@ -302,7 +304,7 @@ public class HBaseDataStoreTest {
 
         // rawKeyVersion 2.0
         DocumentTranslator documentTranslator = new DocumentTranslator(TestUtils.createHBaseConfigWithRawKeyV2());
-        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator);
+        hbaseDataStore = new HBaseDataStore(hbaseTableConnection, mapper, documentTranslator, restrictionsConfig);
 
         id = UUID.randomUUID().toString();
         data = mapper.valueToTree(Collections.singletonMap("TEST_NAME", "SINGLE_SAVE_TEST"));

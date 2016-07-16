@@ -91,11 +91,11 @@ public class FoxtrotServer extends Service<FoxtrotServerConfiguration> {
 
         TableMetadataManager tableMetadataManager = new DistributedTableMetadataManager(hazelcastConnection, elasticsearchConnection);
         DataStore dataStore = new HBaseDataStore(HBaseTableConnection,
-                objectMapper, new DocumentTranslator(configuration.getHbase()));
+                objectMapper, new DocumentTranslator(configuration.getHbase()), configuration.getRestrictionsConfig());
         QueryStore queryStore = new ElasticsearchQueryStore(tableMetadataManager, elasticsearchConnection, dataStore, objectMapper);
         FoxtrotTableManager tableManager = new FoxtrotTableManager(tableMetadataManager, queryStore, dataStore);
         CacheManager cacheManager = new CacheManager(new DistributedCacheFactory(hazelcastConnection, objectMapper));
-        AnalyticsLoader analyticsLoader = new AnalyticsLoader(tableMetadataManager, dataStore, queryStore, elasticsearchConnection, cacheManager, objectMapper);
+        AnalyticsLoader analyticsLoader = new AnalyticsLoader(tableMetadataManager, dataStore, queryStore, elasticsearchConnection, cacheManager, objectMapper, configuration.getRestrictionsConfig());
         QueryExecutor executor = new QueryExecutor(analyticsLoader, executorService);
         DataDeletionManagerConfig dataDeletionManagerConfig = configuration.getTableDataManagerConfig();
         DataDeletionManager dataDeletionManager = new DataDeletionManager(dataDeletionManagerConfig, queryStore);
@@ -119,7 +119,7 @@ public class FoxtrotServer extends Service<FoxtrotServerConfiguration> {
         environment.addResource(new TableFieldMappingResource(queryStore));
         environment.addResource(new ConsoleResource(
                 new ElasticsearchConsolePersistence(elasticsearchConnection, objectMapper)));
-        FqlEngine fqlEngine = new FqlEngine(tableMetadataManager, queryStore, executor, objectMapper);
+        FqlEngine fqlEngine = new FqlEngine(tableMetadataManager, queryStore, executor, objectMapper, configuration.getRestrictionsConfig());
         environment.addResource(new FqlResource(fqlEngine));
         environment.addResource(new ClusterInfoResource(clusterManager));
         environment.addResource(new UtilResource(configuration));

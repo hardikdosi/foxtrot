@@ -61,7 +61,7 @@ public class DistributedCacheTest {
         when(tableMetadataManager.exists(TestUtils.TEST_TABLE_NAME)).thenReturn(true);
         QueryStore queryStore = Mockito.mock(QueryStore.class);
 
-        AnalyticsLoader analyticsLoader = new AnalyticsLoader(tableMetadataManager, null, queryStore, null, cacheManager, mapper);
+        AnalyticsLoader analyticsLoader = new AnalyticsLoader(tableMetadataManager, null, queryStore, null, cacheManager, mapper, new RestrictionsConfig());
         TestUtils.registerActions(analyticsLoader, mapper);
     }
 

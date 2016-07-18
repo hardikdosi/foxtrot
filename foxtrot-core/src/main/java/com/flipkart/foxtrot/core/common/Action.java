@@ -17,7 +17,9 @@ package com.flipkart.foxtrot.core.common;
 
 import com.flipkart.foxtrot.common.ActionRequest;
 import com.flipkart.foxtrot.common.ActionResponse;
+import com.flipkart.foxtrot.common.group.GroupRequest;
 import com.flipkart.foxtrot.common.query.Filter;
+import com.flipkart.foxtrot.common.query.datetime.LastFilter;
 import com.flipkart.foxtrot.common.query.general.AnyFilter;
 import com.flipkart.foxtrot.common.query.numeric.LessThanFilter;
 import com.flipkart.foxtrot.common.util.CollectionUtils;
@@ -177,6 +179,8 @@ public abstract class Action<ParameterType extends ActionRequest> implements Cal
     public void validateImpl() throws MalformedQueryException {
         validateImpl(parameter);
     }
+
+
 
     /**
      * Returns a metric key for current action. Ideally this key's cardinality should be less since each new value of

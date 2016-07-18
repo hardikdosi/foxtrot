@@ -87,6 +87,8 @@ public class HistogramResponse implements ActionResponse {
     }
     private List<Count> counts;
 
+    private List<Count> resultPrevious;
+
     public HistogramResponse() {
     }
 
@@ -117,6 +119,14 @@ public class HistogramResponse implements ActionResponse {
 
     public void setTo(long to) {
         this.to = to;
+    }
+
+    public List<Count> getResultPrevious() {
+        return resultPrevious;
+    }
+
+    public void setResultPrevious(List<Count> resultPrevious) {
+        this.resultPrevious = resultPrevious;
     }
 
     @Override

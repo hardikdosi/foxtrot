@@ -27,12 +27,21 @@ import java.util.Map;
  */
 public class GroupResponse implements ActionResponse {
     private Map<String, Object> result;
+    private Map<String, Object> resultPrevious;
 
     public GroupResponse() {
     }
 
     public GroupResponse(Map<String, Object> result) {
         this.result = result;
+    }
+
+    public Map<String, Object> getResultPrevious() {
+        return resultPrevious;
+    }
+
+    public void setResultPrevious(Map<String, Object> resultPrevious) {
+        this.resultPrevious = resultPrevious;
     }
 
     public Map<String, Object> getResult() {

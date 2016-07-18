@@ -20,7 +20,7 @@ function Histogram() {
     //Instance properties
     this.selectedFilters = null;
     this.period = 0;
-    this.doCompare = false;
+    this.offset = "0m";
 }
 
 Histogram.prototype = new Tile();
@@ -29,10 +29,13 @@ Histogram.prototype.render = function (data, animate) {
     if (this.period == 0) {
         return;
     }
+    var tileElement = $("#" + this.id);
     if (this.title) {
-        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + this.title);
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $("#" + this.id).find(".tile-header").text(this.title);
     } else {
-        $("#" + this.id).find(".tile-header").text("[ " + this.wtable.name + " ] " + "Event rate for " + this.tables.selectedTable.name + " table");
+        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $("#" + this.id).find(".tile-header").text("Event rate for " + this.tables.selectedTable.name + " table");
     }
 
     var parent = $("#content-for-" + this.id);
@@ -99,7 +102,7 @@ Histogram.prototype.render = function (data, animate) {
     });
 };
 
-Histogram.prototype.renderWithCompare = function (data, dataPrevious, animate) {
+Histogram.prototype.renderWithCompare = function (data, animate) {
     if (this.period == 0) {
         return;
     }
@@ -125,7 +128,7 @@ Histogram.prototype.renderWithCompare = function (data, dataPrevious, animate) {
         canvas = parent.find(".chartcanvas");
     }
 
-    if (!data.hasOwnProperty('counts') && !dataPrevious.hasOwnProperty('counts')) {
+    if (!data.hasOwnProperty('counts') && !data.hasOwnProperty('resultPrevious')) {
         canvas.empty();
         legendArea.empty();
         return;
@@ -141,19 +144,19 @@ Histogram.prototype.renderWithCompare = function (data, dataPrevious, animate) {
         rows.sort(function (lhs, rhs) {
             return (lhs[0] < rhs[0]) ? -1 : ((lhs[0] == rhs[0]) ? 0 : 1);
         })
-        d.push({label: "Current", data: rows, color: "#57889C"});
+        d.push({label: "Current", data: rows, color: "#44B3C2"});
     }
 
-    if (dataPrevious.hasOwnProperty('counts')) {
+    if (data.hasOwnProperty('resultPrevious')) {
         var rowsPrevious = [];
         //rowsPrevious.push(['date', 'count']);
-        for (var i = dataPrevious.counts.length - 1; i >= 0; i--) {
-            rowsPrevious.push([dataPrevious.counts[i].period + (24 * 3600 * 1000), dataPrevious.counts[i].count]);
+        for (var i = data.resultPrevious.length - 1; i >= 0; i--) {
+            rowsPrevious.push([data.resultPrevious[i].period, data.resultPrevious[i].count]);
         }
         rowsPrevious.sort(function (lhs, rhs) {
             return (lhs[0] < rhs[0]) ? -1 : ((lhs[0] == rhs[0]) ? 0 : 1);
         })
-        d.push({label: "Previous", data: rowsPrevious, color: "#9c5766"});
+        d.push({label: "Previous", data: rowsPrevious, color: "#F1A94E"});
     }
 
     $.plot(canvas, d, {
@@ -202,22 +205,13 @@ Histogram.prototype.isSetupDone = function () {
     return this.period != 0;
 };
 
-Histogram.prototype.getQuery = function (noOfDaysOld) {
-    var days = 0;
-    if (noOfDaysOld) {
-        days = noOfDaysOld;
-    }
-
+Histogram.prototype.getQuery = function () {
     if (this.period != 0) {
         var timestamp = new Date().getTime();
         var filters = [];
 
         var psDropDown = $("#" + this.id).find(".period-select").val();
-        if (psDropDown==="2d" || psDropDown==="5d" || psDropDown==="7d" || psDropDown==="15d") {
-            this.doCompare = false;
-        }
-
-        filters.push(timeValue(this.period, psDropDown, days));
+        filters.push(timeValue(this.period, psDropDown));
         if (this.selectedFilters && this.selectedFilters.filters) {
             for (var i = 0; i < this.selectedFilters.filters.length; i++) {
                 filters.push(this.selectedFilters.filters[i]);
@@ -228,7 +222,8 @@ Histogram.prototype.getQuery = function (noOfDaysOld) {
             table: this.wtable.name,
             filters: filters,
             field: "_timestamp",
-            period: periodFromWindow($("#" + this.id).find(".period-select").val())
+            period: periodFromWindow($("#" + this.id).find(".period-select").val()),
+            offset: this.offset
         });
     }
 };
@@ -246,7 +241,7 @@ Histogram.prototype.configChanged = function () {
     } else {
         this.selectedFilters = null;
     }
-    this.doCompare = modal.find(".hist-do-compare").prop('checked');
+    this.offset = modal.find(".tile-offset").val();
     console.log("Config changed for: " + this.id);
 };
 
@@ -257,7 +252,7 @@ Histogram.prototype.populateSetupDialog = function () {
     if (this.selectedFilters) {
         modal.find(".selected-filters").val(JSON.stringify(this.selectedFilters));
     }
-    modal.find(".hist-do-compare").prop('checked', this.doCompare);
+    modal.find(".tile-offset").val(this.offset);
 }
 
 Histogram.prototype.registerSpecificData = function (representation) {
@@ -265,6 +260,7 @@ Histogram.prototype.registerSpecificData = function (representation) {
     if (this.selectedFilters) {
         representation['selectedFilters'] = btoa(JSON.stringify(this.selectedFilters));
     }
+    representation['offset'] = this.offset;
 };
 
 Histogram.prototype.loadSpecificData = function (representation) {
@@ -272,6 +268,7 @@ Histogram.prototype.loadSpecificData = function (representation) {
     if (representation.hasOwnProperty('selectedFilters')) {
         this.selectedFilters = JSON.parse(atob(representation['selectedFilters']));
     }
+    this.offset = representation['offset'];
 };
 
 Histogram.prototype.registerComplete = function () {

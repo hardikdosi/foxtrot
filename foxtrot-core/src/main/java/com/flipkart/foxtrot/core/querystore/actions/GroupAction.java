@@ -20,6 +20,8 @@ import com.flipkart.foxtrot.common.group.GroupRequest;
 import com.flipkart.foxtrot.common.group.GroupResponse;
 import com.flipkart.foxtrot.common.query.Filter;
 import com.flipkart.foxtrot.common.query.FilterCombinerType;
+import com.flipkart.foxtrot.common.query.FilterOperator;
+import com.flipkart.foxtrot.common.query.datetime.LastFilter;
 import com.flipkart.foxtrot.common.query.general.AnyFilter;
 import com.flipkart.foxtrot.common.util.CollectionUtils;
 import com.flipkart.foxtrot.core.cache.CacheManager;
@@ -37,6 +39,7 @@ import com.flipkart.foxtrot.core.querystore.query.ElasticSearchQueryGenerator;
 import com.flipkart.foxtrot.core.table.TableMetadataManager;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.lucene.util.GrowableByteArrayDataOutput;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -46,6 +49,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -116,13 +120,11 @@ public class GroupAction extends Action<GroupRequest> {
         }
     }
 
-
-    @Override
-    public ActionResponse execute(GroupRequest parameter) throws FoxtrotException {
+    private Map<String, Object> getResult(GroupRequest parameter, long offset) throws FoxtrotException {
         SearchRequestBuilder query;
         try {
             query = getConnection().getClient()
-                    .prepareSearch(ElasticsearchUtils.getIndices(parameter.getTable(), parameter))
+                    .prepareSearch(ElasticsearchUtils.getIndices(parameter.getTable(), parameter, offset))
                     .setIndicesOptions(Utils.indicesOptions());
             TermsBuilder rootBuilder = null;
             TermsBuilder termsBuilder = null;
@@ -152,12 +154,23 @@ public class GroupAction extends Action<GroupRequest> {
             Aggregations aggregations = response.getAggregations();
             // Check if any aggregation is present or not
             if (aggregations == null) {
-                return new GroupResponse(Collections.<String, Object>emptyMap());
+                return Collections.<String, Object>emptyMap();
+            } else {
+                return getMap(fields, aggregations);
             }
-            return new GroupResponse(getMap(fields, aggregations));
         } catch (ElasticsearchException e) {
             throw FoxtrotExceptions.createQueryExecutionException(parameter, e);
         }
+    }
+
+    @Override
+    public ActionResponse execute(GroupRequest parameter) throws FoxtrotException {
+        GroupResponse groupResponse = new GroupResponse();
+        groupResponse.setResult(getResult(parameter, 0));
+        if (parameter.getOffset().toMilliseconds() > 0) {
+            groupResponse.setResultPrevious(getResult(parameter, parameter.getOffset().toMilliseconds()));
+        }
+        return groupResponse;
     }
 
     private Map<String, Object> getMap(List<String> fields, Aggregations aggregations) {

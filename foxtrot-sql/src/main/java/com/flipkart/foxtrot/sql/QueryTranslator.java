@@ -186,6 +186,7 @@ public class QueryTranslator extends SqlElementVisitor {
                 group.setTable(tableName);
                 group.setNesting(groupBycolumnsList);
                 group.setFilters(filters);
+                group.setOffset(Duration.parse("0m"));
                 request = group;
                 break;
             }
@@ -214,6 +215,7 @@ public class QueryTranslator extends SqlElementVisitor {
                 HistogramRequest histogram = (HistogramRequest)calledAction;
                 histogram.setTable(tableName);
                 histogram.setFilters(filters);
+                histogram.setOffset(Duration.parse("0m"));
                 request = histogram;
                 break;
             }

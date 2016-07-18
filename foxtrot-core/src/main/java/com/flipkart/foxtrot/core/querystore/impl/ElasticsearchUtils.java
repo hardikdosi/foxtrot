@@ -73,8 +73,8 @@ public class ElasticsearchUtils {
                 ElasticsearchUtils.TABLENAME_PREFIX, table, ElasticsearchUtils.TABLENAME_POSTFIX);
     }
 
-    public static String[] getIndices(final String table, final ActionRequest request) throws Exception {
-        return getIndices(table, request, new PeriodSelector(request.getFilters()).analyze());
+    public static String[] getIndices(final String table, final ActionRequest request, long offset) throws Exception {
+        return getIndices(table, request, new PeriodSelector(request.getFilters(), offset).analyze());
     }
 
     @VisibleForTesting

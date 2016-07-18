@@ -56,6 +56,7 @@ BarTile.prototype.renderWithCompare = function (data, animate) {
     var legendAreaPrevious = null;
     if (this.showLegend) {
         if (0 === parent.find(".chartcanvas").length) {
+
             canvasParent = $("<div>", {class: "chartcanvas"});
 
             canvas = $("<div>", {class: "group-chart-area"});
@@ -72,6 +73,10 @@ BarTile.prototype.renderWithCompare = function (data, animate) {
             canvas = parent.find(".chartcanvas").find(".group-chart-area");
             legendArea = parent.find(".chartcanvas").find(".group-legend-area");
             legendAreaPrevious = parent.find(".chartcanvas").find(".group-legend-area-previous");
+            if (legendAreaPrevious.length === 0) {
+                legendAreaPrevious = $("<div>", {class: "group-legend-area-previous"});
+                parent.find(".chartcanvas").append(legendAreaPrevious);
+            }
         }
 
         var canvasHeight = canvas.height();
@@ -257,10 +262,10 @@ BarTile.prototype.render = function (data, animate) {
     var parentWidth = parent.width();
 
     if (this.title) {
-        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
         $(tileElement).find(".tile-header").text(this.title);
     } else {
-        $(tileElement).find(".tile-header-table").text("TABLE: " + this.wtable.name);
+        $(tileElement).find(".tile-header-table").text("TABLE : " + this.wtable.name);
         $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
     }
 

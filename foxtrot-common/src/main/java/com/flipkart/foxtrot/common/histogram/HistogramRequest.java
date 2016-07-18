@@ -17,6 +17,7 @@ package com.flipkart.foxtrot.common.histogram;
 
 import com.flipkart.foxtrot.common.ActionRequest;
 import com.flipkart.foxtrot.common.Period;
+import com.yammer.dropwizard.util.Duration;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
@@ -32,9 +33,19 @@ public class HistogramRequest extends ActionRequest {
 
     private Period period;
 
+    private Duration offset;
+
     public HistogramRequest() {
         this.field = "_timestamp";
         this.period = Period.minutes;
+    }
+
+    public Duration getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Duration offset) {
+        this.offset = offset;
     }
 
     public String getTable() {

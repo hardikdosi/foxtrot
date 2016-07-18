@@ -51,7 +51,6 @@ function Tile() {
     this.width = 0;
     this.height = 0;
     this.query = null;
-    this.previousQuery = null;
     this.refresh = true;
     this.queue = null;
     this.cachedData = null;
@@ -83,11 +82,8 @@ Tile.prototype.cleanup = function () {
 };
 
 Tile.prototype.reloadData = function () {
-
     this.query = this.getQuery();
-    //this.previousQuery = this.getQuery(1);
-
-    if (!this.query/* || !this.previousQuery*/) {
+    if (!this.query) {
         console.log("query setup incomplete " + this.id);
         return;
     }
@@ -102,7 +98,6 @@ Tile.prototype.reloadData = function () {
             contentType: this.contentType,
             timeout: this.queue.timeout,
             data: this.query,
-            //success: $.proxy(this.newDataReceived, this)
             success: $.proxy(this.newDataReceived, this),
             error: function() {
                 error("Incorrect Tile Setup. Please make sure that the parameter values are within limits.");
@@ -111,11 +106,8 @@ Tile.prototype.reloadData = function () {
 };
 
 Tile.prototype.newDataReceived = function (data) {
-    //this.cachedData = data;
-
     if (data.hasOwnProperty("resultPrevious")) {
         this.renderWithCompare(data, true);
-        console.log(">>>>>>>", data);
     } else {
         this.render(data, true);
     }

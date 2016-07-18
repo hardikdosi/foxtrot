@@ -111,8 +111,7 @@ public class HistogramAction extends Action<HistogramRequest> {
         }
     }
 
-    @Override
-    public ActionResponse execute(HistogramRequest parameter) throws FoxtrotException {
+    private List<HistogramResponse.Count> getCounts(HistogramRequest parameter, long offset) throws FoxtrotException {
         SearchRequestBuilder searchRequestBuilder;
         DateHistogram.Interval interval = null;
         switch (parameter.getPeriod()) {
@@ -132,7 +131,7 @@ public class HistogramAction extends Action<HistogramRequest> {
         String dateHistogramKey = Utils.sanitizeFieldForAggregation(parameter.getField());
         try {
             searchRequestBuilder = getConnection().getClient().prepareSearch(
-                    ElasticsearchUtils.getIndices(parameter.getTable(), parameter))
+                    ElasticsearchUtils.getIndices(parameter.getTable(), parameter, offset))
                     .setTypes(ElasticsearchUtils.DOCUMENT_TYPE_NAME)
                     .setIndicesOptions(Utils.indicesOptions())
                     .setQuery(new ElasticSearchQueryGenerator(FilterCombinerType.and, getRestrictionsConfig())
@@ -150,20 +149,30 @@ public class HistogramAction extends Action<HistogramRequest> {
             SearchResponse response = searchRequestBuilder.execute().actionGet();
             Aggregations aggregations = response.getAggregations();
             if (aggregations == null) {
-                return new HistogramResponse(Collections.<HistogramResponse.Count>emptyList());
+                return Collections.<HistogramResponse.Count>emptyList();
             }
             DateHistogram dateHistogram = aggregations.get(dateHistogramKey);
             Collection<? extends DateHistogram.Bucket> buckets = dateHistogram.getBuckets();
             List<HistogramResponse.Count> counts = new ArrayList<>(buckets.size());
             for (DateHistogram.Bucket bucket : buckets) {
                 HistogramResponse.Count count = new HistogramResponse.Count(
-                        bucket.getKeyAsNumber(), bucket.getDocCount());
+                        (long)bucket.getKeyAsNumber() + offset, bucket.getDocCount());
                 counts.add(count);
             }
-            return new HistogramResponse(counts);
+            return counts;
         } catch (ElasticsearchException e) {
             throw FoxtrotExceptions.createQueryExecutionException(parameter, e);
         }
+    }
+
+    @Override
+    public ActionResponse execute(HistogramRequest parameter) throws FoxtrotException {
+        HistogramResponse histogramResponse = new HistogramResponse();
+        histogramResponse.setCounts(getCounts(parameter, 0));
+        if (parameter.getOffset().toMilliseconds() > 0) {
+            histogramResponse.setResultPrevious(getCounts(parameter, parameter.getOffset().toMilliseconds()));
+        }
+        return histogramResponse;
     }
 
     @Override

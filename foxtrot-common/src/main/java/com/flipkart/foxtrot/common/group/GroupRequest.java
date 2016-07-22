@@ -19,6 +19,7 @@ import com.flipkart.foxtrot.common.ActionRequest;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.List;
+import com.yammer.dropwizard.util.Duration;
 
 /**
  * User: Santanu Sinha (santanu.sinha@flipkart.com)
@@ -31,6 +32,8 @@ public class GroupRequest extends ActionRequest {
 
     private List<String> nesting;
 
+    private Duration offset;
+
     public GroupRequest() {
     }
 
@@ -41,6 +44,10 @@ public class GroupRequest extends ActionRequest {
     public void setTable(String table) {
         this.table = table;
     }
+
+    public Duration getOffset() { return offset; }
+
+    public void setOffset(Duration offset) { this.offset = offset;  }
 
 
     public List<String> getNesting() {
@@ -57,6 +64,7 @@ public class GroupRequest extends ActionRequest {
                 .append("table", table)
                 .append("filters", getFilters())
                 .append("nesting", nesting)
+                .append("offset", offset)
                 .toString();
     }
 }

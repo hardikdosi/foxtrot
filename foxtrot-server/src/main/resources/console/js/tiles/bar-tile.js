@@ -24,9 +24,235 @@ function BarTile() {
     this.selectedFilters = null;
     this.uniqueValues = [];
     this.uiFilteredValues;
+    this.offset = "0m";
 }
 
 BarTile.prototype = new Tile();
+
+BarTile.prototype.renderWithCompare = function (data, animate) {
+    var tileElement = $("#" + this.id);
+    var parent = $("#content-for-" + this.id);
+    var parentWidth = parent.width();
+
+    if (this.title) {
+        $(tileElement).find(".tile-header").text(this.title);
+    } else {
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
+    }
+
+    var chartLabel = null;
+    if (0 === parent.find(".pielabel").length) {
+        chartLabel = $("<div>", {class: "pielabel"});
+        parent.append(chartLabel);
+    } else {
+        chartLabel = parent.find(".pielabel");
+    }
+    chartLabel.text(getPeriodString(this.period, tileElement.find(".period-select").val()));
+
+    var canvas = null;
+    var legendArea = null;
+    var legendAreaPrevious = null;
+    if (this.showLegend) {
+        if (0 === parent.find(".chartcanvas").length) {
+
+            canvasParent = $("<div>", {class: "chartcanvas"});
+
+            canvas = $("<div>", {class: "group-chart-area"});
+            canvasParent.append(canvas);
+
+            legendArea = $("<div>", {class: "group-legend-area"});
+            canvasParent.append(legendArea);
+
+            legendAreaPrevious = $("<div>", {class: "group-legend-area-previous"});
+            canvasParent.append(legendAreaPrevious);
+
+            parent.append(canvasParent);
+        } else {
+            canvas = parent.find(".chartcanvas").find(".group-chart-area");
+            legendArea = parent.find(".chartcanvas").find(".group-legend-area");
+            legendAreaPrevious = parent.find(".chartcanvas").find(".group-legend-area-previous");
+            if (legendAreaPrevious.length === 0) {
+                legendAreaPrevious = $("<div>", {class: "group-legend-area-previous"});
+                parent.find(".chartcanvas").append(legendAreaPrevious);
+            }
+        }
+
+        var canvasHeight = canvas.height();
+        var canvasWidth = canvas.width();
+        canvas.width(0.58 * canvas.parent().width());
+        legendArea.width((canvas.parent().width() - canvas.width() - 50) / 2 - 30);
+        legendAreaPrevious.width((canvas.parent().width() - canvas.width() - 50) / 2 - 30);
+        chartLabel.width(canvas.width());
+        parentWidth = canvasWidth;
+        //chartLabel.height(canvas.height());
+    } else {
+        if (0 === parent.find(".chartcanvas").length) {
+            canvas = $("<div>", {class: "chartcanvas"});
+            parent.append(canvas);
+        }
+        else {
+            canvas = parent.find(".chartcanvas");
+        }
+    }
+
+
+    if (!data.hasOwnProperty("result") && !data.hasOwnProperty("resultPrevious")) {
+        canvas.empty();
+        if (this.showLegend) {
+            legendArea.empty();
+            legendAreaPrevious.empty();
+        }
+        return;
+    }
+
+    var columns = [];
+    var previousColumns = [];
+    var ticks = [];
+    var i = 0;
+    this.uniqueValues = [];
+    var flatData = [];
+    var flatDataPrevious = [];
+    var combinedData = [];
+
+
+    //new code
+    var tmpData = new Object();
+    if (data.hasOwnProperty("result")) {
+        for (property in data.result) {
+            if (!tmpData.hasOwnProperty(property)) {
+                tmpData[property] = new Object();
+            }
+            tmpData[property]["curr"] = data.result[property];
+        }
+    }
+    if (data.hasOwnProperty("resultPrevious")) {
+        for (property in data.resultPrevious) {
+            if (!tmpData.hasOwnProperty(property)) {
+                tmpData[property] = new Object();
+            }
+            tmpData[property]["prev"] = data.resultPrevious[property];
+        }
+    }
+    if (0 == Object.keys(tmpData).length) {
+        canvas.empty();
+        return;
+    }
+    //  var propertyWiseData = new Object();
+    for (var property in tmpData) {
+        this.uniqueValues.push(property);
+        var count = 0;
+        var propertyData = tmpData[property];
+        if (propertyData.hasOwnProperty("curr")) {
+            count = propertyData["curr"];
+        }
+        var dataElement = [i, count];
+        if (this.isValueVisible(property)) {
+            columns.push(dataElement);
+            flatData.push({label: property, data: count, color: "#44B3C2", day: "Current"});
+            ticks.push([i, property]);
+        }
+        count = 0;
+        if (propertyData.hasOwnProperty("prev")) {
+            count = propertyData["prev"];
+        }
+        dataElement = [i, count];
+        if (this.isValueVisible(property)) {
+            previousColumns.push(dataElement);
+            flatDataPrevious.push({label: property, data: count, color: "#E45641", day: "Previous"});
+
+        }
+        i++;
+    }
+    combinedData.push({
+        label: "Current",
+        data: columns,
+        bars: {
+            show: true,
+            label: {
+                show: true
+            },
+            barWidth: 0.2,
+            align: "center",
+            lineWidth: 1.0,
+            fill: true,
+            fillColor: "#44B3C2",
+            order: 2
+        },
+        color: "#44B3C2"
+    });
+    combinedData.push({
+        label: "Previous",
+        data: previousColumns,
+        bars: {
+            show: true,
+            label: {
+                show: true
+            },
+            barWidth: 0.2,
+            align: "center",
+            lineWidth: 1.0,
+            fill: true,
+            fillColor: "#E45641",
+            order: 1
+        },
+        color: "#E45641"
+    });
+    // }
+
+    var xAxisOptions = {
+        tickLength: 0,
+        labelWidth: 0,
+        axisLabelPadding: 5,
+        axisLabelUseCanvas: true
+    };
+
+    var tmpLabel = "";
+    for (var i = 0; i < ticks.length; i++) {
+        tmpLabel += (ticks[i][1] + " ");
+    }
+    if (tmpLabel.visualLength() <= parentWidth) {
+        xAxisOptions['ticks'] = ticks;
+        xAxisOptions['tickFormatter'] = null;
+    }
+    else {
+        xAxisOptions['ticks'] = null;
+        xAxisOptions['tickFormatter'] = function () {
+            return "";
+        }
+    }
+
+    var chartOptions = {
+        series: {
+            shadowSize: 1,
+            valueLabels: {
+                show: false
+            }
+        },
+        legend: {
+            show: false
+        },
+
+        xaxis: xAxisOptions,
+
+        grid: {
+            hoverable: true,
+            color: "#B2B2B2",
+            show: true,
+            borderWidth: 1,
+            borderColor: "#EEEEEE"
+        },
+        tooltip: true,
+        tooltipOpts: {
+            content: function (label, x, y) {
+                return label + ": " + y;
+            }
+        }
+    };
+
+    $.plot(canvas, combinedData, chartOptions);
+    drawLegend(flatData, legendArea);
+    drawLegendPrevious(flatDataPrevious, legendAreaPrevious);
+};
 
 BarTile.prototype.render = function (data, animate) {
     var tileElement = $("#" + this.id);
@@ -51,7 +277,7 @@ BarTile.prototype.render = function (data, animate) {
     var canvas = null;
     var legendArea = null;
     if (this.showLegend) {
-        if (0 == parent.find(".chartcanvas").length) {
+        if (0 === parent.find(".chartcanvas").length) {
             canvasParent = $("<div>", {class: "chartcanvas"});
             canvas = $("<div>", {class: "group-chart-area"});
             canvasParent.append(canvas);
@@ -70,7 +296,7 @@ BarTile.prototype.render = function (data, animate) {
         parentWidth = canvasWidth;
         //chartLabel.height(canvas.height());
     } else {
-        if (0 == parent.find(".chartcanvas").length) {
+        if (0 === parent.find(".chartcanvas").length) {
             canvas = $("<div>", {class: "chartcanvas"});
             parent.append(canvas);
         }
@@ -81,6 +307,9 @@ BarTile.prototype.render = function (data, animate) {
 
     if (!data.hasOwnProperty("result")) {
         canvas.empty();
+        if (this.showLegend) {
+            legendArea.empty();
+        }
         return;
     }
     var colors = new Colors(Object.keys(data.result).length);
@@ -185,7 +414,8 @@ BarTile.prototype.getQuery = function () {
             opcode: "group",
             table: this.tables.selectedTable.name,
             filters: filters,
-            nesting: [this.eventTypeFieldName]
+            nesting: [this.eventTypeFieldName],
+            offset: this.offset
         });
     }
 };
@@ -216,6 +446,7 @@ BarTile.prototype.configChanged = function () {
         this.selectedFilters = null;
     }
     this.showLegend = modal.find(".bar-show-legend").prop('checked');
+    this.offset = modal.find(".tile-offset").val();
     $("#content-for-" + this.id).find(".chartcanvas").remove();
     $("#content-for-" + this.id).find(".pielabel").remove();
 };
@@ -241,6 +472,7 @@ BarTile.prototype.populateSetupDialog = function () {
         modal.find(".selected-filters").val(JSON.stringify(this.selectedFilters));
     }
     modal.find(".bar-show-legend").prop('checked', this.showLegend);
+    modal.find(".tile-offset").val(this.offset);
 }
 
 BarTile.prototype.registerSpecificData = function (representation) {
@@ -248,6 +480,7 @@ BarTile.prototype.registerSpecificData = function (representation) {
     representation['eventTypeFieldName'] = this.eventTypeFieldName;
     representation['selectedValues'] = this.selectedValues;
     representation['showLegend'] = this.showLegend;
+    representation['offset'] = this.offset;
     if (this.selectedFilters) {
         representation['selectedFilters'] = btoa(JSON.stringify(this.selectedFilters));
     }
@@ -257,6 +490,7 @@ BarTile.prototype.loadSpecificData = function (representation) {
     this.period = representation['period'];
     this.eventTypeFieldName = representation['eventTypeFieldName'];
     this.selectedValues = representation['selectedValues'];
+    this.offset = representation['offset'];
     if (representation.hasOwnProperty('selectedFilters')) {
         this.selectedFilters = JSON.parse(atob(representation['selectedFilters']));
     }

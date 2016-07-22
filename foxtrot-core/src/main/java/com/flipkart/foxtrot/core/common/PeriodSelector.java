@@ -31,11 +31,13 @@ public class PeriodSelector extends FilterVisitor {
 
     private final TimeWindow timeWindow = new TimeWindow();
     private final List<Filter> filters;
+    private final long offset;
 
-    public PeriodSelector(final List<Filter> filters) {
+    public PeriodSelector(final List<Filter> filters, long offset) {
         this.filters = filters;
         timeWindow.setStartTime(Long.MAX_VALUE);
         timeWindow.setEndTime(Long.MIN_VALUE);
+        this.offset = offset;
     }
 
     public Interval analyze() throws Exception {
@@ -108,6 +110,9 @@ public class PeriodSelector extends FilterVisitor {
 
     @Override
     public void visit(LastFilter lastFilter) throws Exception {
+        if (offset > 0) {
+            lastFilter.setCurrentTime(lastFilter.getCurrentTime() - offset);
+        }
         TimeWindow window = lastFilter.getWindow();
         timeWindow.setStartTime(window.getStartTime());
         timeWindow.setEndTime(window.getEndTime());

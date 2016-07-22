@@ -61,7 +61,7 @@ h1 {
 
 .tile-drag {
   border-style: dashed;
-  border-width: 1px;  
+  border-width: 1px;
 }
 
 .tile:hover {
@@ -90,7 +90,7 @@ color: black;
 top: 50%;
 margin-top: -13px;
 margin-left: -13px;
-left: 50%;  
+left: 50%;
 }
 
 .tile .widget-toolbox {
@@ -110,11 +110,11 @@ font-size: small;
   display: inline-block;
   cursor: pointer;
   cursor: hand;
-  }  
+  }
 .fix-center{
   width:1100px;
   left:50%;
-  margin-left:-550px; 
+  margin-left:-550px;
 }
 .float-clear{
   clear:both;
@@ -208,7 +208,7 @@ background-image: linear-gradient(to right bottom, #828D94 36%, #475361 100%);
 path {
   stroke-width: 2px;
 }
-.c3-axis-x: {
+.c3-axis-x {
   stroke-width: 2px;
 }
 
@@ -243,7 +243,7 @@ path {
 }
 
 .header-button:hover {
-  box-shadow: 1px 1px 4px #141E27;  
+  box-shadow: 1px 1px 4px #141E27;
   cursor: pointer;
   cursor: hand;
 
@@ -331,7 +331,17 @@ path {
   padding-left: 10px;
   overflow: auto;
 }
-
+.group-legend-area-previous {
+    padding: 0px;
+    width: 40%;
+    height: 100%;
+    float: left;
+    margin-left: 20px;
+    border-color: #B2B2B2;
+    /*border-left: 1px solid;*/
+    padding-left: 10px;
+    overflow: auto;
+}
 .legend-color-box {
     height: 15px;
     width: 15px;
@@ -383,4 +393,18 @@ path {
 
 .data-tab {
     margin-top: 5px;
+}
+
+.current-legend-label-color {
+    color: #44B3C2;
+    padding: 0px;
+    font-weight: bold;
+    display: block;
+}
+
+.previous-legend-label-color {
+    color: #E45641;
+    padding: 0px;
+    font-weight: bold;
+    display: block;
 }

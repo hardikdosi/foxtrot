@@ -20,9 +20,107 @@ function Histogram() {
     //Instance properties
     this.selectedFilters = null;
     this.period = 0;
+    this.offset = "0m";
 }
 
 Histogram.prototype = new Tile();
+
+Histogram.prototype.renderWithCompare = function (data, animate) {
+    if (this.period == 0) {
+        return;
+    }
+    var tileElement = $("#" + this.id);
+    if (this.title) {
+        $(tileElement).find(".tile-header").text(this.title);
+    } else {
+        $(tileElement).find(".tile-header").text("Group by " + this.eventTypeFieldName);
+    }
+
+    var parent = $("#content-for-" + this.id);
+    var canvas = null;
+    if (!parent || 0 == parent.find(".chartcanvas").length) {
+        parent = $("#content-for-" + this.id);
+        canvas = $("<div>", {class: "chartcanvas"});
+        parent.append(canvas);
+        legendArea = $("<div>", {class: "legendArea"});
+        parent.append(legendArea);
+    }
+    else {
+        canvas = parent.find(".chartcanvas");
+    }
+
+    if (!data.hasOwnProperty('counts') && !data.hasOwnProperty('resultPrevious')) {
+        canvas.empty();
+        legendArea.empty();
+        return;
+    }
+
+    var d = [];
+    if (data.hasOwnProperty('counts')) {
+        var rows = [];
+        //rows.push(['date', 'count']);
+        for (var i = data.counts.length - 1; i >= 0; i--) {
+            rows.push([data.counts[i].period, data.counts[i].count]);
+        }
+        rows.sort(function (lhs, rhs) {
+            return (lhs[0] < rhs[0]) ? -1 : ((lhs[0] == rhs[0]) ? 0 : 1);
+        })
+        d.push({label: "Current", data: rows, color: "#44B3C2"});
+    }
+
+    if (data.hasOwnProperty('resultPrevious')) {
+        var rowsPrevious = [];
+        //rowsPrevious.push(['date', 'count']);
+        for (var i = data.resultPrevious.length - 1; i >= 0; i--) {
+            rowsPrevious.push([data.resultPrevious[i].period, data.resultPrevious[i].count]);
+        }
+        rowsPrevious.sort(function (lhs, rhs) {
+            return (lhs[0] < rhs[0]) ? -1 : ((lhs[0] == rhs[0]) ? 0 : 1);
+        })
+        d.push({label: "Previous", data: rowsPrevious, color: "#F1A94E"});
+    }
+
+    $.plot(canvas, d, {
+        series: {
+            lines: {
+                show: true,
+                lineWidth: 1.0,
+                shadowSize: 0,
+                fill: true,
+                fillColor: {colors: [{opacity: 0.7}, {opacity: 0.1}]}
+            }/*,
+             stack: true*/
+        },
+        grid: {
+            hoverable: true,
+            color: "#B2B2B2",
+            show: true,
+            borderWidth: 1,
+            borderColor: "#EEEEEE"
+        },
+        xaxis: {
+            mode: "time",
+            timezone: "browser"
+        }/*,
+         selection: {
+         mode: "x",
+         minSize: 1
+         }*/,
+        tooltip: true,
+        tooltipOpts: {
+            content: "%y events at %x",
+            defaultFormat: true
+        },
+        legend: {
+            show: true,
+            noColumns: d.length,
+            labelFormatter: function (label, series) {
+                return '<font color="black"> &nbsp;' + label + ' &nbsp;</font>';
+            },
+            container: parent.find(".legendArea")
+        }
+    });
+}
 
 Histogram.prototype.render = function (data, animate) {
     if (this.period == 0) {
@@ -48,9 +146,10 @@ Histogram.prototype.render = function (data, animate) {
     }
     var times = [];
     if (!data.hasOwnProperty('counts')) {
-        chartContent.empty();
+        canvas.empty();
         return;
     }
+    legendArea.empty();
     var rows = [];
     rows.push(['date', 'count']);
     for (var i = data.counts.length - 1; i >= 0; i--) {
@@ -88,6 +187,9 @@ Histogram.prototype.render = function (data, animate) {
         tooltipOpts: {
             content: "%y events at %x",
             defaultFormat: true
+        },
+        legend: {
+            show: false
         }
     });
 };
@@ -111,7 +213,8 @@ Histogram.prototype.getQuery = function () {
             table: this.tables.selectedTable.name,
             filters: filters,
             field: "_timestamp",
-            period: periodFromWindow($("#" + this.id).find(".period-select").val())
+            period: periodFromWindow($("#" + this.id).find(".period-select").val()),
+            offset: this.offset
         });
     }
 };
@@ -129,7 +232,7 @@ Histogram.prototype.configChanged = function () {
     } else {
         this.selectedFilters = null;
     }
-
+    this.offset = modal.find(".tile-offset").val();
     console.log("Config changed for: " + this.id);
 };
 
@@ -140,6 +243,7 @@ Histogram.prototype.populateSetupDialog = function () {
     if (this.selectedFilters) {
         modal.find(".selected-filters").val(JSON.stringify(this.selectedFilters));
     }
+    modal.find(".tile-offset").val(this.offset);
 }
 
 Histogram.prototype.registerSpecificData = function (representation) {
@@ -147,6 +251,7 @@ Histogram.prototype.registerSpecificData = function (representation) {
     if (this.selectedFilters) {
         representation['selectedFilters'] = btoa(JSON.stringify(this.selectedFilters));
     }
+    representation['offset'] = this.offset;
 };
 
 Histogram.prototype.loadSpecificData = function (representation) {
@@ -154,6 +259,7 @@ Histogram.prototype.loadSpecificData = function (representation) {
     if (representation.hasOwnProperty('selectedFilters')) {
         this.selectedFilters = JSON.parse(atob(representation['selectedFilters']));
     }
+    this.offset = representation['offset'];
 };
 
 Histogram.prototype.registerComplete = function () {

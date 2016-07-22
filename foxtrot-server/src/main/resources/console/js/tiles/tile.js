@@ -97,8 +97,11 @@ Tile.prototype.reloadData = function () {
 };
 
 Tile.prototype.newDataReceived = function (data) {
-    this.cachedData = data;
-    this.render(data, true);
+    if (data.hasOwnProperty("resultPrevious")) {
+        this.renderWithCompare(data, true);
+    } else {
+        this.render(data, true);
+    }
 };
 
 Tile.prototype.handleResize = function (event, ui) {

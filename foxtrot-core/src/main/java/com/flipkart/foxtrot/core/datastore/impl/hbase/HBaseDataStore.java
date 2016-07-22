@@ -168,7 +168,7 @@ public class HBaseDataStore implements DataStore {
                 }
                 if (restrictionsConfig.getFieldsize() > 0) {
                     if (!isValid(document.getData())) {
-                        //errorMessages.add("invalid document data at index - " + i);
+                        errorMessages.add("invalid document data at index - " + i);
                         continue;
                     }
                 }
